@@ -1,0 +1,42 @@
+{
+  "name": "body-harmony-be",
+  "version": "1.0.0",
+  "description": "Backend API for Body Harmony health and wellness tracking application",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "seed": "node src/seed.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "health",
+    "wellness",
+    "fitness",
+    "tracking",
+    "body",
+    "harmony",
+    "nodejs",
+    "express",
+    "mongodb",
+    "api"
+  ],
+  "author": "Body Harmony Team",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/body-harmony-be.git"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "mongoose": "^8.15.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

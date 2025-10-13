@@ -58,7 +58,78 @@ const validateObjectId = (req, res, next) => {
   next();
 };
 
+/**
+ * Validates EAN-8 or EAN-13 code format and checksum
+ * EAN codes must be 8 or 13 digits with valid checksum digit
+ */
+const validateEAN = (req, res, next) => {
+  const { ean } = req.params;
+  
+  // Check if EAN exists
+  if (!ean) {
+    return res.status(400).json({
+      error: 'EAN code is required',
+      message: 'Please provide an EAN code'
+    });
+  }
+
+  // Remove any spaces or dashes
+  const cleanEAN = ean.replace(/[\s-]/g, '');
+
+  // Check if it's only digits
+  if (!/^\d+$/.test(cleanEAN)) {
+    return res.status(400).json({
+      error: 'Invalid EAN format',
+      message: 'EAN code must contain only digits'
+    });
+  }
+
+  // Check length (EAN-8 or EAN-13)
+  if (cleanEAN.length !== 8 && cleanEAN.length !== 13) {
+    return res.status(400).json({
+      error: 'Invalid EAN length',
+      message: 'EAN code must be 8 or 13 digits long',
+      received: cleanEAN.length
+    });
+  }
+
+  // Validate checksum
+  if (!isValidEANChecksum(cleanEAN)) {
+    return res.status(400).json({
+      error: 'Invalid EAN checksum',
+      message: 'The EAN code checksum is invalid. Please verify the code.'
+    });
+  }
+
+  // Store cleaned EAN for use in route
+  req.params.ean = cleanEAN;
+  
+  next();
+};
+
+/**
+ * Calculates and validates EAN checksum
+ * Algorithm works for both EAN-8 and EAN-13
+ */
+const isValidEANChecksum = (ean) => {
+  const digits = ean.split('').map(Number);
+  const checkDigit = digits.pop(); // Last digit is the check digit
+  
+  let sum = 0;
+  
+  // For EAN-13: multiply odd positions (from right) by 3, even by 1
+  // For EAN-8: same algorithm
+  digits.reverse().forEach((digit, index) => {
+    sum += digit * (index % 2 === 0 ? 3 : 1);
+  });
+  
+  const calculatedCheckDigit = (10 - (sum % 10)) % 10;
+  
+  return checkDigit === calculatedCheckDigit;
+};
+
 module.exports = {
   validateLogData,
-  validateObjectId
+  validateObjectId,
+  validateEAN,
 }; 

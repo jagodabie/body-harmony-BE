@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 const mongoose = require("mongoose");
+const { validateEAN } = require("../middleware/validation");
 
 // GET /products/debug/db - Debug database connection
 router.get("/debug/db", async (req, res) => {
@@ -27,7 +28,7 @@ router.get("/debug/db", async (req, res) => {
 });
 
 // GET /products/:ean - Get product by EAN code
-router.get("/:ean", async (req, res) => {
+router.get("/:ean", validateEAN, async (req, res) => {
   try {
     // Try to search as string
     let product = await Product.findOne({ code: req.params.ean });

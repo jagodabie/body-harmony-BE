@@ -4,6 +4,7 @@ const cors = require('cors');
 const connectDB = require('./config/database');
 const logsRoutes = require('./routes/logs');
 const errorHandler = require('./middleware/errorHandler');
+const productsRoutes = require('./routes/products');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -12,14 +13,9 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
-// Logging middleware
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
-
 // Routes
 app.use('/logs', logsRoutes);
+app.use('/products', productsRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -41,9 +37,7 @@ app.use(errorHandler);
 // Start server
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀 Body Harmony Backend running on http://localhost:${PORT}`);
-    console.log(`📊 API Documentation: http://localhost:${PORT}/health`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    // Server started successfully
   });
 }).catch(err => {
   console.error('❌ Failed to connect to database:', err.message);

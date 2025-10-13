@@ -14,21 +14,18 @@ const connectDB = async () => {
 
     await mongoose.connect(mongoURI, options);
     
-    console.log('✅ MongoDB connected successfully');
-    
     // Event listeners for connection
     mongoose.connection.on('error', (err) => {
       console.error('❌ MongoDB connection error:', err);
     });
 
     mongoose.connection.on('disconnected', () => {
-      console.log('⚠️ MongoDB disconnected');
+      // MongoDB disconnected
     });
 
     // Graceful shutdown
     process.on('SIGINT', async () => {
       await mongoose.connection.close();
-      console.log('🔌 MongoDB connection closed through app termination');
       process.exit(0);
     });
 

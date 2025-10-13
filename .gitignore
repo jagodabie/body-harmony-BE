@@ -45,3 +45,7 @@ temp/
 # MongoDB
 data/
 *.db
+
+# scripts
+import-atlas.sh
+body_harmony.body_harmony_products_slim.json

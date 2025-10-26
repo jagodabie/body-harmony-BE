@@ -93,19 +93,52 @@ router.get('/daily/:date/detailed', async (req, res) => {
       };
 
       const productsWithNutrition = products.map(mp => {
-        const nutrition = mp.calculateNutrition();
-        if (nutrition) {
-          mealTotals.calories += nutrition.calories;
-          mealTotals.proteins += nutrition.proteins;
-          mealTotals.carbs += nutrition.carbs;
-          mealTotals.fat += nutrition.fat;
-          mealTotals.sugar += nutrition.sugar;
-          mealTotals.salt += nutrition.salt;
+        // Calculate nutrition manually since mp is from aggregation
+        const product = mp.productCode;
+        const quantity = mp.quantity;
+        let nutrition = null;
+
+        if (product && product.nutriments) {
+          const multiplier = quantity / 100; // Convert to per 100g basis
+
+          nutrition = {
+            calories: Math.round(
+              (product.nutriments["energy-kcal_100g"] || 0) * multiplier
+            ),
+            proteins:
+              Math.round(
+                (product.nutriments.proteins_100g || 0) * multiplier * 10
+              ) / 10,
+            carbs:
+              Math.round(
+                (product.nutriments.carbohydrates_100g || 0) * multiplier * 10
+              ) / 10,
+            fat:
+              Math.round((product.nutriments.fat_100g || 0) * multiplier * 10) /
+              10,
+            sugar:
+              Math.round(
+                (product.nutriments.sugars_100g || 0) * multiplier * 10
+              ) / 10,
+            salt:
+              Math.round(
+                (product.nutriments.salt_100g || 0) * multiplier * 10
+              ) / 10,
+          };
+
+          if (nutrition) {
+            mealTotals.calories += nutrition.calories;
+            mealTotals.proteins += nutrition.proteins;
+            mealTotals.carbs += nutrition.carbs;
+            mealTotals.fat += nutrition.fat;
+            mealTotals.sugar += nutrition.sugar;
+            mealTotals.salt += nutrition.salt;
+          }
         }
 
         return {
-          ...mp.toPublicJSON(),
-          nutrition: nutrition || {}
+          ...mp, // mp is already a plain object from aggregation
+          nutrition: nutrition || {},
         };
       });
 

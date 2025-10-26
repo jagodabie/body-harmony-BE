@@ -4,119 +4,160 @@ const mealProductSchema = new mongoose.Schema(
   {
     mealId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Meal',
+      ref: "Meal",
       required: [true, "Meal ID is required"],
-      index: true
+      index: true,
     },
-    productId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-      required: [true, "Product ID is required"],
-      index: true
+    productCode: {
+      type: String,
+      ref: "Product",
+      required: [true, "Product code is required"],
+      index: true,
+      trim: true,
     },
     quantity: {
       type: Number,
       required: [true, "Quantity is required"],
-      min: [0.1, "Quantity must be greater than 0"]
+      min: [0.1, "Quantity must be greater than 0"],
     },
     unit: {
       type: String,
-      default: 'g',
-      enum: ['g', 'kg', 'ml', 'l', 'pieces', 'cups', 'tbsp', 'tsp'],
-      trim: true
+      default: "g",
+      enum: ["g", "kg", "ml", "l", "pieces", "cups", "tbsp", "tsp"],
+      trim: true,
     },
     createdAt: {
       type: Date,
       default: Date.now,
-      immutable: true
+      immutable: true,
     },
     updatedAt: {
       type: Date,
-      default: Date.now
-    }
+      default: Date.now,
+    },
   },
   {
     timestamps: true,
-    collection: "body_harmony_meal_products"
+    collection: "body_harmony_meal_products",
   }
 );
 
 // Middleware - updates updatedAt before each save
-mealProductSchema.pre('save', function(next) {
+mealProductSchema.pre("save", function (next) {
   this.updatedAt = new Date();
   next();
 });
 
 // Static method to get products by meal
-mealProductSchema.statics.getProductsByMeal = function(mealId) {
-  return this.find({ mealId })
-    .populate('productId', 'name code nutriments')
-    .sort({ createdAt: 1 });
+mealProductSchema.statics.getProductsByMeal = function (mealId) {
+  return this.aggregate([
+    {
+      $match: { mealId: new mongoose.Types.ObjectId(mealId) },
+    },
+    {
+      $lookup: {
+        from: "body_harmony_products_slim",
+        localField: "productCode",
+        foreignField: "code",
+        as: "productCode",
+      },
+    },
+    {
+      $unwind: "$productCode",
+    },
+    {
+      $project: {
+        mealId: 1,
+        productCode: {
+          name: "$productCode.name",
+          code: "$productCode.code",
+          nutriments: "$productCode.nutriments",
+          brands: "$productCode.brands",
+        },
+        quantity: 1,
+        unit: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    {
+      $sort: { createdAt: 1 },
+    },
+  ]);
 };
 
 // Static method to get products by date
-mealProductSchema.statics.getProductsByDate = function(date) {
+mealProductSchema.statics.getProductsByDate = function (date) {
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
-  
+
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
-  
+
   return this.aggregate([
     {
       $lookup: {
-        from: 'body_harmony_meals',
-        localField: 'mealId',
-        foreignField: '_id',
-        as: 'meal'
-      }
+        from: "body_harmony_meals",
+        localField: "mealId",
+        foreignField: "_id",
+        as: "meal",
+      },
     },
     {
-      $unwind: '$meal'
+      $unwind: "$meal",
     },
     {
       $match: {
-        'meal.date': {
+        "meal.date": {
           $gte: startOfDay,
-          $lte: endOfDay
-        }
-      }
+          $lte: endOfDay,
+        },
+      },
     },
     {
       $lookup: {
-        from: 'body_harmony_products_slim',
-        localField: 'productId',
-        foreignField: '_id',
-        as: 'product'
-      }
+        from: "body_harmony_products_slim",
+        localField: "productCode",
+        foreignField: "code",
+        as: "product",
+      },
     },
     {
-      $unwind: '$product'
+      $unwind: "$product",
     },
     {
-      $sort: { 'meal.time': 1, createdAt: 1 }
-    }
+      $sort: { "meal.time": 1, createdAt: 1 },
+    },
   ]);
 };
 
 // Instance method to calculate nutritional values
-mealProductSchema.methods.calculateNutrition = function() {
-  const product = this.productId;
+mealProductSchema.methods.calculateNutrition = function () {
+  const product = this.productCode;
   const quantity = this.quantity;
-  
+
   if (!product || !product.nutriments) {
     return null;
   }
-  
+
   const multiplier = quantity / 100; // Convert to per 100g basis
-  
+
   return {
-    calories: Math.round((product.nutriments['energy-kcal_100g'] || 0) * multiplier),
-    proteins: Math.round((product.nutriments.proteins_100g || 0) * multiplier * 10) / 10,
-    carbs: Math.round((product.nutriments.carbohydrates_100g || 0) * multiplier * 10) / 10,
+    calories: Math.round(
+      (product.nutriments["energy-kcal_100g"] || 0) * multiplier
+    ),
+    proteins:
+      Math.round((product.nutriments.proteins_100g || 0) * multiplier * 10) /
+      10,
+    carbs:
+      Math.round(
+        (product.nutriments.carbohydrates_100g || 0) * multiplier * 10
+      ) / 10,
     fat: Math.round((product.nutriments.fat_100g || 0) * multiplier * 10) / 10,
-    sugar: Math.round((product.nutriments.sugars_100g || 0) * multiplier * 10) / 10,
-    salt: Math.round((product.nutriments.salt_100g || 0) * multiplier * 10) / 10
+    sugar:
+      Math.round((product.nutriments.sugars_100g || 0) * multiplier * 10) / 10,
+    salt:
+      Math.round((product.nutriments.salt_100g || 0) * multiplier * 10) / 10,
   };
 };
 

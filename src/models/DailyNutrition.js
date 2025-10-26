@@ -97,28 +97,43 @@ dailyNutritionSchema.statics.getNutritionByDateRange = function(startDate, endDa
 
 // Static method to calculate daily nutrition from meals
 dailyNutritionSchema.statics.calculateDailyNutrition = async function(date) {
-  const MealProduct = mongoose.model('MealProduct');
-  const Meal = mongoose.model('Meal');
-  
+  const MealProduct = mongoose.model("MealProduct");
+  const Meal = mongoose.model("Meal");
+
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
-  
+
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
-  
+
   // Get all meals for the date
   const meals = await Meal.find({
     date: {
       $gte: startOfDay,
-      $lte: endOfDay
-    }
+      $lte: endOfDay,
+    },
   });
-  
-  // Get all meal products for the date
-  const mealProducts = await MealProduct.find({
-    mealId: { $in: meals.map(meal => meal._id) }
-  }).populate('productId');
-  
+
+  // Get all meal products for the date using aggregation
+  const mealProducts = await MealProduct.aggregate([
+    {
+      $match: {
+        mealId: { $in: meals.map((meal) => meal._id) },
+      },
+    },
+    {
+      $lookup: {
+        from: "body_harmony_products_slim",
+        localField: "productCode",
+        foreignField: "code",
+        as: "productCode",
+      },
+    },
+    {
+      $unwind: "$productCode",
+    },
+  ]);
+
   // Calculate totals
   let totals = {
     totalCalories: 0,
@@ -126,37 +141,53 @@ dailyNutritionSchema.statics.calculateDailyNutrition = async function(date) {
     totalCarbs: 0,
     totalFat: 0,
     totalSugar: 0,
-    totalSalt: 0
+    totalSalt: 0,
   };
-  
-  mealProducts.forEach(mealProduct => {
-    const nutrition = mealProduct.calculateNutrition();
-    if (nutrition) {
-      totals.totalCalories += nutrition.calories;
-      totals.totalProteins += nutrition.proteins;
-      totals.totalCarbs += nutrition.carbs;
-      totals.totalFat += nutrition.fat;
-      totals.totalSugar += nutrition.sugar;
-      totals.totalSalt += nutrition.salt;
+
+  mealProducts.forEach((mealProduct) => {
+    // Calculate nutrition manually since mealProduct is from aggregation
+    const product = mealProduct.productCode;
+    const quantity = mealProduct.quantity;
+
+    if (product && product.nutriments) {
+      const multiplier = quantity / 100; // Convert to per 100g basis
+
+      totals.totalCalories += Math.round(
+        (product.nutriments["energy-kcal_100g"] || 0) * multiplier
+      );
+      totals.totalProteins +=
+        Math.round((product.nutriments.proteins_100g || 0) * multiplier * 10) /
+        10;
+      totals.totalCarbs +=
+        Math.round(
+          (product.nutriments.carbohydrates_100g || 0) * multiplier * 10
+        ) / 10;
+      totals.totalFat +=
+        Math.round((product.nutriments.fat_100g || 0) * multiplier * 10) / 10;
+      totals.totalSugar +=
+        Math.round((product.nutriments.sugars_100g || 0) * multiplier * 10) /
+        10;
+      totals.totalSalt +=
+        Math.round((product.nutriments.salt_100g || 0) * multiplier * 10) / 10;
     }
   });
-  
+
   // Round values
-  Object.keys(totals).forEach(key => {
+  Object.keys(totals).forEach((key) => {
     totals[key] = Math.round(totals[key] * 10) / 10;
   });
-  
+
   // Create or update daily nutrition record
   const dailyNutrition = await this.findOneAndUpdate(
     { date: startOfDay },
     {
       ...totals,
-      meals: meals.map(meal => meal._id),
-      mealCount: meals.length
+      meals: meals.map((meal) => meal._id),
+      mealCount: meals.length,
     },
     { upsert: true, new: true }
   );
-  
+
   return dailyNutrition;
 };
 

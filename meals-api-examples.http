@@ -1,0 +1,99 @@
+### Body Harmony - Meals API Examples
+### Base URL: http://localhost:4000
+
+### 1. Create a new meal
+POST http://localhost:4000/meals
+Content-Type: application/json
+
+{
+  "name": "Śniadanie",
+  "date": "2024-01-15",
+  "time": "08:30",
+  "notes": "Dobre śniadanie przed pracą"
+}
+
+### 2. Get all meals for a specific date
+GET http://localhost:4000/meals?date=2024-01-15
+
+### 3. Get all meals in date range
+GET http://localhost:4000/meals?startDate=2024-01-01&endDate=2024-01-31
+
+### 4. Get specific meal with products
+GET http://localhost:4000/meals/MEAL_ID_HERE
+
+### 5. Update a meal
+PUT http://localhost:4000/meals/MEAL_ID_HERE
+Content-Type: application/json
+
+{
+  "name": "Duże śniadanie",
+  "time": "09:00",
+  "notes": "Zaktualizowane śniadanie"
+}
+
+### 6. Add product to meal (creates meal if doesn't exist) - NEW SMART ENDPOINT
+POST http://localhost:4000/meals/add-product
+Content-Type: application/json
+
+{
+  "mealType": "BREAKFAST",
+  "date": "2024-01-15",
+  "time": "08:00",
+  "productId": "PRODUCT_ID_HERE",
+  "quantity": 100,
+  "unit": "g",
+  "notes": "Good breakfast"
+}
+
+### 6b. Add product to meal (traditional way - requires existing meal)
+POST http://localhost:4000/meals/MEAL_ID_HERE/products
+Content-Type: application/json
+
+{
+  "productId": "PRODUCT_ID_HERE",
+  "quantity": 100,
+  "unit": "g"
+}
+
+### 7. Update product in meal
+PUT http://localhost:4000/meals/MEAL_ID_HERE/products/MEAL_PRODUCT_ID_HERE
+Content-Type: application/json
+
+{
+  "quantity": 150,
+  "unit": "g"
+}
+
+### 8. Remove product from meal
+DELETE http://localhost:4000/meals/MEAL_ID_HERE/products/MEAL_PRODUCT_ID_HERE
+
+### 9. Delete a meal
+DELETE http://localhost:4000/meals/MEAL_ID_HERE
+
+### 10. Get daily nutrition summary
+GET http://localhost:4000/nutrition/daily/2024-01-15
+
+### 11. Get detailed daily nutrition with meals and products
+GET http://localhost:4000/nutrition/daily/2024-01-15/detailed
+
+### 12. Get nutrition for date range
+GET http://localhost:4000/nutrition/range?startDate=2024-01-01&endDate=2024-01-31
+
+### 13. Recalculate daily nutrition
+POST http://localhost:4000/nutrition/daily/2024-01-15/recalculate
+
+### 14. Get nutrition statistics for last 30 days
+GET http://localhost:4000/nutrition/stats?days=30
+
+### 15. Get nutrition statistics for last 7 days
+GET http://localhost:4000/nutrition/stats?days=7
+
+### 16. Health check
+GET http://localhost:4000/health
+
+### 17. Get product by EAN (existing endpoint)
+GET http://localhost:4000/products/1234567890123
+
+### 18. Get all logs (existing endpoint)
+GET http://localhost:4000/logs
+

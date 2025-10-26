@@ -5,6 +5,8 @@ const connectDB = require('./config/database');
 const logsRoutes = require('./routes/logs');
 const errorHandler = require('./middleware/errorHandler');
 const productsRoutes = require('./routes/products');
+const mealsRoutes = require("./routes/meals");
+const nutritionRoutes = require("./routes/nutrition");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -16,6 +18,8 @@ app.use(express.json());
 // Routes
 app.use('/logs', logsRoutes);
 app.use('/products', productsRoutes);
+app.use("/meals", mealsRoutes);
+app.use("/nutrition", nutritionRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

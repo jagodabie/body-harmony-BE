@@ -132,14 +132,27 @@ router.get('/:id', async (req, res) => {
 // POST /meals - Create new meal
 router.post('/', async (req, res) => {
   try {
-    const { name, date, time, notes } = req.body;
+    const { name, date, time, notes, mealType } = req.body;
 
     if (!name || !date) {
       return res.status(400).json({ error: 'Name and date are required' });
     }
 
+    if (!mealType) {
+      return res.status(400).json({ error: 'Meal type is required' });
+    }
+
+    // Validate meal type
+    if (!Object.values(MEAL_TYPES).includes(mealType)) {
+      return res.status(400).json({
+        error: 'Invalid meal type',
+        validTypes: Object.values(MEAL_TYPES),
+      });
+    }
+
     const meal = new Meal({
       name,
+      mealType,
       date: new Date(date),
       time,
       notes
@@ -160,16 +173,25 @@ router.post('/', async (req, res) => {
 // PUT /meals/:id - Update meal
 router.put('/:id', async (req, res) => {
   try {
-    const { name, date, time, notes } = req.body;
+    const { name, date, time, notes, mealType } = req.body;
 
     const meal = await Meal.findById(req.params.id);
     if (!meal) {
       return res.status(404).json({ error: 'Meal not found' });
     }
 
+    // Validate meal type if provided
+    if (mealType && !Object.values(MEAL_TYPES).includes(mealType)) {
+      return res.status(400).json({
+        error: 'Invalid meal type',
+        validTypes: Object.values(MEAL_TYPES),
+      });
+    }
+
     const oldDate = meal.date;
 
     meal.name = name || meal.name;
+    meal.mealType = mealType || meal.mealType;
     meal.date = date ? new Date(date) : meal.date;
     meal.time = time !== undefined ? time : meal.time;
     meal.notes = notes !== undefined ? notes : meal.notes;

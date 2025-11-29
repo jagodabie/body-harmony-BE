@@ -4,7 +4,31 @@ const DailyNutrition = require('../models/DailyNutrition');
 const Meal = require('../models/Meal');
 const MealProduct = require('../models/MealProduct');
 
-// GET /nutrition/daily/:date - Get daily nutrition summary
+/**
+ * @swagger
+ * /nutrition/daily/{date}:
+ *   get:
+ *     summary: Get daily nutrition summary
+ *     tags: [Nutrition]
+ *     parameters:
+ *       - in: path
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Date in YYYY-MM-DD format
+ *         example: "2025-11-24"
+ *     responses:
+ *       200:
+ *         description: Daily nutrition summary
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DailyNutrition'
+ *       500:
+ *         description: Server error
+ */
 router.get('/daily/:date', async (req, res) => {
   try {
     const date = new Date(req.params.date);
@@ -38,7 +62,43 @@ router.get('/daily/:date', async (req, res) => {
   }
 });
 
-// GET /nutrition/range - Get nutrition for date range
+/**
+ * @swagger
+ * /nutrition/range:
+ *   get:
+ *     summary: Get nutrition summary for a date range
+ *     tags: [Nutrition]
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date
+ *         example: "2025-11-01"
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date
+ *         example: "2025-11-30"
+ *     responses:
+ *       200:
+ *         description: Nutrition data for date range
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/DailyNutrition'
+ *       400:
+ *         description: Missing required parameters
+ *       500:
+ *         description: Server error
+ */
 router.get('/range', async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -59,7 +119,84 @@ router.get('/range', async (req, res) => {
   }
 });
 
-// GET /nutrition/daily/:date/detailed - Get detailed daily nutrition with meals and products
+/**
+ * @swagger
+ * /nutrition/daily/{date}/detailed:
+ *   get:
+ *     summary: Get detailed daily nutrition with meals and products
+ *     description: Returns detailed nutrition breakdown including all meals, products, and calculated nutrition values
+ *     tags: [Nutrition]
+ *     parameters:
+ *       - in: path
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Date in YYYY-MM-DD format
+ *         example: "2025-11-24"
+ *     responses:
+ *       200:
+ *         description: Detailed nutrition data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 date:
+ *                   type: string
+ *                   format: date
+ *                 meals:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       mealType:
+ *                         type: string
+ *                       date:
+ *                         type: string
+ *                         format: date-time
+ *                       time:
+ *                         type: string
+ *                       products:
+ *                         type: array
+ *                       totals:
+ *                         type: object
+ *                         properties:
+ *                           calories:
+ *                             type: number
+ *                           proteins:
+ *                             type: number
+ *                           carbs:
+ *                             type: number
+ *                           fat:
+ *                             type: number
+ *                           sugar:
+ *                             type: number
+ *                           salt:
+ *                             type: number
+ *                 totals:
+ *                   type: object
+ *                   properties:
+ *                     totalCalories:
+ *                       type: number
+ *                     totalProteins:
+ *                       type: number
+ *                     totalCarbs:
+ *                       type: number
+ *                     totalFat:
+ *                       type: number
+ *                     totalSugar:
+ *                       type: number
+ *                     totalSalt:
+ *                       type: number
+ *       500:
+ *         description: Server error
+ */
 router.get('/daily/:date/detailed', async (req, res) => {
   try {
     const date = new Date(req.params.date);
@@ -175,7 +312,32 @@ router.get('/daily/:date/detailed', async (req, res) => {
   }
 });
 
-// POST /nutrition/daily/:date/recalculate - Recalculate daily nutrition
+/**
+ * @swagger
+ * /nutrition/daily/{date}/recalculate:
+ *   post:
+ *     summary: Recalculate daily nutrition for a specific date
+ *     description: Forces recalculation of daily nutrition values based on all meals and products for the date
+ *     tags: [Nutrition]
+ *     parameters:
+ *       - in: path
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Date in YYYY-MM-DD format
+ *         example: "2025-11-24"
+ *     responses:
+ *       200:
+ *         description: Daily nutrition recalculated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DailyNutrition'
+ *       500:
+ *         description: Server error
+ */
 router.post('/daily/:date/recalculate', async (req, res) => {
   try {
     const date = new Date(req.params.date);
@@ -189,7 +351,53 @@ router.post('/daily/:date/recalculate', async (req, res) => {
   }
 });
 
-// GET /nutrition/stats - Get nutrition statistics
+/**
+ * @swagger
+ * /nutrition/stats:
+ *   get:
+ *     summary: Get nutrition statistics for a period
+ *     description: Returns average nutrition values for the specified number of days
+ *     tags: [Nutrition]
+ *     parameters:
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: integer
+ *           default: 30
+ *         description: Number of days to calculate statistics for
+ *         example: 30
+ *     responses:
+ *       200:
+ *         description: Nutrition statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 period:
+ *                   type: string
+ *                   example: "30 days"
+ *                 averageCalories:
+ *                   type: number
+ *                   description: Average calories per day
+ *                 averageProteins:
+ *                   type: number
+ *                   description: Average proteins per day (g)
+ *                 averageCarbs:
+ *                   type: number
+ *                   description: Average carbohydrates per day (g)
+ *                 averageFat:
+ *                   type: number
+ *                   description: Average fat per day (g)
+ *                 totalDays:
+ *                   type: number
+ *                   description: Total number of days in the period
+ *                 daysWithMeals:
+ *                   type: number
+ *                   description: Number of days that have meals
+ *       500:
+ *         description: Server error
+ */
 router.get('/stats', async (req, res) => {
   try {
     const { days = 30 } = req.query;

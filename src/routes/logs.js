@@ -3,7 +3,43 @@ const router = express.Router();
 const Log = require('../models/Logs');
 const { validateLogData, validateObjectId } = require('../middleware/validation');
 
-// GET /logs - Get all logs
+/**
+ * @swagger
+ * /logs:
+ *   get:
+ *     summary: Get all logs with optional filters
+ *     tags: [Logs]
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [weight, measurement, mood, energy, sleep, exercise, nutrition, water]
+ *         description: Filter by log type
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Start date for date range filter
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: End date for date range filter
+ *     responses:
+ *       200:
+ *         description: List of logs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Log'
+ *       500:
+ *         description: Server error
+ */
 router.get('/', async (req, res) => {
   try {
     const { startDate, endDate, type } = req.query;
@@ -29,7 +65,33 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /logs/:id - Get specific log
+/**
+ * @swagger
+ * /logs/{id}:
+ *   get:
+ *     summary: Get a specific log by ID
+ *     tags: [Logs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Log ID (24-character hexadecimal string)
+ *     responses:
+ *       200:
+ *         description: Log found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Log'
+ *       400:
+ *         description: Invalid ID format
+ *       404:
+ *         description: Log not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/:id', validateObjectId, async (req, res) => {
   try {
     const log = await Log.findById(req.params.id);
@@ -42,7 +104,50 @@ router.get('/:id', validateObjectId, async (req, res) => {
   }
 });
 
-// POST /logs - Create new log
+/**
+ * @swagger
+ * /logs:
+ *   post:
+ *     summary: Create a new log entry
+ *     tags: [Logs]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - type
+ *               - value
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [weight, measurement, mood, energy, sleep, exercise, nutrition, water]
+ *                 example: "weight"
+ *               value:
+ *                 type: number
+ *                 example: 75.5
+ *               unit:
+ *                 type: string
+ *                 example: "kg"
+ *               notes:
+ *                 type: string
+ *                 maxLength: 500
+ *               date:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       201:
+ *         description: Log created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Log'
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Server error
+ */
 router.post('/', validateLogData, async (req, res) => {
   try {
     const { type, value, unit, notes, date } = req.body;
@@ -68,7 +173,56 @@ router.post('/', validateLogData, async (req, res) => {
   }
 });
 
-// PUT /logs/:id - Update log
+/**
+ * @swagger
+ * /logs/{id}:
+ *   put:
+ *     summary: Update a log entry
+ *     tags: [Logs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Log ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - type
+ *               - value
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [weight, measurement, mood, energy, sleep, exercise, nutrition, water]
+ *               value:
+ *                 type: number
+ *               unit:
+ *                 type: string
+ *               notes:
+ *                 type: string
+ *                 maxLength: 500
+ *               date:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       200:
+ *         description: Log updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Log'
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Log not found
+ *       500:
+ *         description: Server error
+ */
 router.put('/:id', validateObjectId, validateLogData, async (req, res) => {
   try {
     const { type, value, unit, notes, date } = req.body;
@@ -101,7 +255,39 @@ router.put('/:id', validateObjectId, validateLogData, async (req, res) => {
   }
 });
 
-// DELETE /logs/:id - Delete log
+/**
+ * @swagger
+ * /logs/{id}:
+ *   delete:
+ *     summary: Delete a log entry
+ *     tags: [Logs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Log ID
+ *     responses:
+ *       200:
+ *         description: Log deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Log deleted successfully"
+ *                 log:
+ *                   $ref: '#/components/schemas/Log'
+ *       400:
+ *         description: Invalid ID format
+ *       404:
+ *         description: Log not found
+ *       500:
+ *         description: Server error
+ */
 router.delete('/:id', validateObjectId, async (req, res) => {
   try {
     const deletedLog = await Log.findByIdAndDelete(req.params.id);
@@ -114,7 +300,37 @@ router.delete('/:id', validateObjectId, async (req, res) => {
   }
 });
 
-// GET /logs/stats/summary - Statistics summary
+/**
+ * @swagger
+ * /logs/stats/summary:
+ *   get:
+ *     summary: Get statistics summary for all log types
+ *     tags: [Logs]
+ *     responses:
+ *       200:
+ *         description: Statistics summary
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     description: Log type
+ *                   count:
+ *                     type: number
+ *                     description: Number of logs of this type
+ *                   latestValue:
+ *                     type: number
+ *                     description: Latest value for this type
+ *                   latestDate:
+ *                     type: string
+ *                     format: date-time
+ *       500:
+ *         description: Server error
+ */
 router.get('/stats/summary', async (req, res) => {
   try {
     const stats = await Log.aggregate([

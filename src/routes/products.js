@@ -27,7 +27,34 @@ router.get("/debug/db", async (req, res) => {
   }
 });
 
-// GET /products/:ean - Get product by EAN code
+/**
+ * @swagger
+ * /products/{ean}:
+ *   get:
+ *     summary: Get product by EAN code
+ *     tags: [Products]
+ *     parameters:
+ *       - in: path
+ *         name: ean
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product EAN code (8 or 13 digits with valid checksum)
+ *         example: "5901234567890"
+ *     responses:
+ *       200:
+ *         description: Product found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ *       400:
+ *         description: Invalid EAN format
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
+ */
 router.get("/:ean", validateEAN, async (req, res) => {
   try {
     // Try to search as string

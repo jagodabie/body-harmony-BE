@@ -114,27 +114,12 @@ dailyNutritionSchema.statics.calculateDailyNutrition = async function(date) {
     },
   });
 
-  // Get all meal products for the date using aggregation
-  const mealProducts = await MealProduct.aggregate([
-    {
-      $match: {
-        mealId: { $in: meals.map((meal) => meal._id) },
-      },
-    },
-    {
-      $lookup: {
-        from: "body_harmony_products_slim",
-        localField: "productCode",
-        foreignField: "code",
-        as: "productCode",
-      },
-    },
-    {
-      $unwind: "$productCode",
-    },
-  ]);
+  // Get all meal products for the date - use stored nutrition values
+  const mealProducts = await MealProduct.find({
+    mealId: { $in: meals.map((meal) => meal._id) },
+  });
 
-  // Calculate totals
+  // Calculate totals using stored nutrition values
   let totals = {
     totalCalories: 0,
     totalProteins: 0,
@@ -145,30 +130,13 @@ dailyNutritionSchema.statics.calculateDailyNutrition = async function(date) {
   };
 
   mealProducts.forEach((mealProduct) => {
-    // Calculate nutrition manually since mealProduct is from aggregation
-    const product = mealProduct.productCode;
-    const quantity = mealProduct.quantity;
-
-    if (product && product.nutriments) {
-      const multiplier = quantity / 100; // Convert to per 100g basis
-
-      totals.totalCalories += Math.round(
-        (product.nutriments["energy-kcal_100g"] || 0) * multiplier
-      );
-      totals.totalProteins +=
-        Math.round((product.nutriments.proteins_100g || 0) * multiplier * 10) /
-        10;
-      totals.totalCarbs +=
-        Math.round(
-          (product.nutriments.carbohydrates_100g || 0) * multiplier * 10
-        ) / 10;
-      totals.totalFat +=
-        Math.round((product.nutriments.fat_100g || 0) * multiplier * 10) / 10;
-      totals.totalSugar +=
-        Math.round((product.nutriments.sugars_100g || 0) * multiplier * 10) /
-        10;
-      totals.totalSalt +=
-        Math.round((product.nutriments.salt_100g || 0) * multiplier * 10) / 10;
+    // Use stored nutrition values (calculated by frontend)
+    if (mealProduct.nutrition) {
+      totals.totalCalories += mealProduct.nutrition.calories || 0;
+      totals.totalProteins += mealProduct.nutrition.proteins || 0;
+      totals.totalCarbs += mealProduct.nutrition.carbs || 0;
+      totals.totalFat += mealProduct.nutrition.fat || 0;
+      // Note: sugar and salt are not stored, so we keep them at 0 or calculate if needed
     }
   });
 

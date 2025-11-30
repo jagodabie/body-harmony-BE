@@ -30,7 +30,7 @@ app.get('/api-docs.json', (req, res) => {
 });
 
 // Home page with API info
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html lang="pl">
@@ -154,17 +154,17 @@ app.get('/', (req, res) => {
     <body>
       <div class="container">
         <h1>🍎 Body Harmony API</h1>
-        <p class="subtitle">Backend API dla aplikacji śledzenia zdrowia i dobrego samopoczucia</p>
+        <p class="subtitle">Backend API for health and wellness tracking application</p>
         
-        <div class="status">✓ API działa poprawnie</div>
+        <div class="status">✓ API is running</div>
         
         <div class="links">
-          <a href="/api-docs" class="link">📚 Otwórz dokumentację Swagger</a>
-          <a href="/api-docs.json" class="link secondary">📄 Pobierz specyfikację JSON</a>
+          <a href="/api-docs" class="link">📚 Open Swagger Documentation</a>
+          <a href="/api-docs.json" class="link secondary">📄 Download JSON Specification</a>
         </div>
         
         <div class="info">
-          <h2>Dostępne endpointy</h2>
+          <h2>Available Endpoints</h2>
           <div class="endpoints">
             <div class="endpoint">
               <div class="endpoint-method">GET /health</div>
@@ -172,19 +172,19 @@ app.get('/', (req, res) => {
             </div>
             <div class="endpoint">
               <div class="endpoint-method">GET /logs</div>
-              <div class="endpoint-path">Lista logów</div>
+              <div class="endpoint-path">Logs list</div>
             </div>
             <div class="endpoint">
               <div class="endpoint-method">GET /meals</div>
-              <div class="endpoint-path">Lista posiłków</div>
+              <div class="endpoint-path">Meals list</div>
             </div>
             <div class="endpoint">
               <div class="endpoint-method">GET /products/:ean</div>
-              <div class="endpoint-path">Produkt po EAN</div>
+              <div class="endpoint-path">Product by EAN</div>
             </div>
             <div class="endpoint">
               <div class="endpoint-method">GET /nutrition/daily/:date</div>
-              <div class="endpoint-path">Dzienna wartość odżywcza</div>
+              <div class="endpoint-path">Daily nutrition</div>
             </div>
           </div>
         </div>

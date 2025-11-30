@@ -26,27 +26,31 @@ const mealProductSchema = new mongoose.Schema(
       enum: ["g", "kg", "ml", "l", "pieces", "cups", "tbsp", "tsp"],
       trim: true,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-      immutable: true,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
+    // Nutrition values calculated by frontend and stored in BE
+    nutrition: {
+      calories: {
+        type: Number,
+        default: 0,
+      },
+      proteins: {
+        type: Number,
+        default: 0,
+      },
+      carbs: {
+        type: Number,
+        default: 0,
+      },
+      fat: {
+        type: Number,
+        default: 0,
+      },
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically manages createdAt and updatedAt
     collection: "body_harmony_meal_products",
   }
 );
-
-// Middleware - updates updatedAt before each save
-mealProductSchema.pre("save", function (next) {
-  this.updatedAt = new Date();
-  next();
-});
 
 // Static method to get products by meal
 mealProductSchema.statics.getProductsByMeal = function (mealId) {
@@ -76,6 +80,7 @@ mealProductSchema.statics.getProductsByMeal = function (mealId) {
         },
         quantity: 1,
         unit: 1,
+        nutrition: 1, // Include stored nutrition values
         createdAt: 1,
         updatedAt: 1,
       },

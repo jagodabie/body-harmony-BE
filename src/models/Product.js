@@ -27,7 +27,6 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-// Model tylko do odczytu - brak hooków save
 productSchema.set("readOnly", true);
 
 module.exports = mongoose.model("Product", productSchema);

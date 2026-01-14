@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const Meal = require('../models/Meal');
-const MealProduct = require('../models/MealProduct');
-const Product = require('../models/Product');
-const DailyNutrition = require('../models/DailyNutrition');
+const mongoose = require("mongoose");
+const Meal = require("../models/Meal");
+const MealProduct = require("../models/MealProduct");
+const Product = require("../models/Product");
+const DailyNutrition = require("../models/DailyNutrition");
 const { MEAL_TYPES } = require("../config/mealTypes");
+const { calculateMealMacros } = require("../helpers/nutrition");
 
 /**
  * @swagger
@@ -69,7 +71,7 @@ const { MEAL_TYPES } = require("../config/mealTypes");
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const { date, startDate, endDate } = req.query;
     let meals;
@@ -100,8 +102,8 @@ router.get('/', async (req, res) => {
 
     res.json(mealsWithProducts);
   } catch (error) {
-    console.error('Error fetching meals:', error);
-    res.status(500).json({ error: 'Server error', message: error.message });
+    console.error("Error fetching meals:", error);
+    res.status(500).json({ error: "Server error", message: error.message });
   }
 });
 
@@ -149,7 +151,7 @@ router.get('/', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.get('/with-products', async (req, res) => {
+router.get("/with-products", async (req, res) => {
   try {
     const { date, startDate, endDate } = req.query;
     let meals;
@@ -157,24 +159,29 @@ router.get('/with-products', async (req, res) => {
     if (date) {
       meals = await Meal.getMealsByDate(new Date(date));
     } else if (startDate && endDate) {
-      meals = await Meal.getMealsByDateRange(new Date(startDate), new Date(endDate));
+      meals = await Meal.getMealsByDateRange(
+        new Date(startDate),
+        new Date(endDate)
+      );
     } else {
       meals = await Meal.find().sort({ date: -1, time: 1 }).limit(50);
     }
 
     // Get products for each meal
-    const mealsWithProducts = await Promise.all(meals.map(async (meal) => {
-      const products = await MealProduct.getProductsByMeal(meal._id);
-      return {
-        ...meal.toPublicJSON(),
-        products: products // aggregation already returns plain objects
-      };
-    }));
+    const mealsWithProducts = await Promise.all(
+      meals.map(async (meal) => {
+        const products = await MealProduct.getProductsByMeal(meal._id);
+        return {
+          ...meal.toPublicJSON(),
+          products: products, // aggregation already returns plain objects
+        };
+      })
+    );
 
     res.json(mealsWithProducts);
   } catch (error) {
-    console.error('Error fetching meals with products:', error);
-    res.status(500).json({ error: 'Server error', message: error.message });
+    console.error("Error fetching meals with products:", error);
+    res.status(500).json({ error: "Server error", message: error.message });
   }
 });
 
@@ -182,7 +189,7 @@ router.get('/with-products', async (req, res) => {
  * @swagger
  * /meals/by-date/{date}/with-products:
  *   get:
- *     summary: Get meals for a specific date with products
+ *     summary: Get meals for a specific date with products and total macros
  *     tags: [Meals]
  *     parameters:
  *       - in: path
@@ -195,7 +202,7 @@ router.get('/with-products', async (req, res) => {
  *         example: "2025-11-24"
  *     responses:
  *       200:
- *         description: Meals for the date with products
+ *         description: Meals for the date with products and total macros
  *         content:
  *           application/json:
  *             schema:
@@ -215,30 +222,65 @@ router.get('/with-products', async (req, res) => {
  *                             type: array
  *                             items:
  *                               $ref: '#/components/schemas/MealProduct'
+ *                           macros:
+ *                             type: object
+ *                             properties:
+ *                               calories:
+ *                                 type: number
+ *                               proteins:
+ *                                 type: number
+ *                               carbs:
+ *                                 type: number
+ *                               fat:
+ *                                 type: number
  *       500:
  *         description: Server error
  */
-router.get('/by-date/:date/with-products', async (req, res) => {
+router.get("/by-date/:date/with-products", async (req, res) => {
   try {
     const date = new Date(req.params.date);
     const meals = await Meal.getMealsByDate(date);
 
-    // Get products for each meal
-    const mealsWithProducts = await Promise.all(meals.map(async (meal) => {
-      const products = await MealProduct.getProductsByMeal(meal._id);
-      return {
-        ...meal.toPublicJSON(),
-        products: products // aggregation already returns plain objects
-      };
-    }));
+    // Get products for each meal and calculate totals
+    const mealsWithProducts = await Promise.all(
+      meals.map(async (meal) => {
+        const products = await MealProduct.getProductsByMeal(meal._id);
+
+        // Calculate totals using stored nutrition values
+        const mealTotals = calculateMealMacros(products);
+
+        // Map products to return only productCode (code) instead of full object
+        const productsSimplified = products.map((product) => {
+          return {
+            _id: product._id,
+            mealId: product.mealId,
+            productCode:
+              product.productCode?.code || product.productCode || null,
+            name: product.productCode?.name || null,
+            quantity: product.quantity,
+            unit: product.unit,
+            nutrition: product.nutrition,
+            nutritionPer100g: product.nutritionPer100g,
+            createdAt: product.createdAt,
+            updatedAt: product.updatedAt,
+          };
+        });
+
+        return {
+          ...meal.toPublicJSON(),
+          products: productsSimplified,
+          macros: mealTotals,
+        };
+      })
+    );
 
     res.json({
-      date: date.toISOString().split('T')[0],
-      meals: mealsWithProducts
+      date: date.toISOString().split("T")[0],
+      meals: mealsWithProducts,
     });
   } catch (error) {
-    console.error('Error fetching meals by date with products:', error);
-    res.status(500).json({ error: 'Server error', message: error.message });
+    console.error("Error fetching meals by date with products:", error);
+    res.status(500).json({ error: "Server error", message: error.message });
   }
 });
 
@@ -293,29 +335,31 @@ router.get('/by-date/:date/with-products', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.get('/by-range/:startDate/:endDate/with-products', async (req, res) => {
+router.get("/by-range/:startDate/:endDate/with-products", async (req, res) => {
   try {
     const startDate = new Date(req.params.startDate);
     const endDate = new Date(req.params.endDate);
     const meals = await Meal.getMealsByDateRange(startDate, endDate);
 
     // Get products for each meal
-    const mealsWithProducts = await Promise.all(meals.map(async (meal) => {
-      const products = await MealProduct.getProductsByMeal(meal._id);
-      return {
-        ...meal.toPublicJSON(),
-        products: products // aggregation already returns plain objects
-      };
-    }));
+    const mealsWithProducts = await Promise.all(
+      meals.map(async (meal) => {
+        const products = await MealProduct.getProductsByMeal(meal._id);
+        return {
+          ...meal.toPublicJSON(),
+          products: products, // aggregation already returns plain objects
+        };
+      })
+    );
 
     res.json({
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
-      meals: mealsWithProducts
+      startDate: startDate.toISOString().split("T")[0],
+      endDate: endDate.toISOString().split("T")[0],
+      meals: mealsWithProducts,
     });
   } catch (error) {
-    console.error('Error fetching meals by date range with products:', error);
-    res.status(500).json({ error: 'Server error', message: error.message });
+    console.error("Error fetching meals by date range with products:", error);
+    res.status(500).json({ error: "Server error", message: error.message });
   }
 });
 
@@ -351,22 +395,22 @@ router.get('/by-range/:startDate/:endDate/with-products', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const meal = await Meal.findById(req.params.id);
     if (!meal) {
-      return res.status(404).json({ error: 'Meal not found' });
+      return res.status(404).json({ error: "Meal not found" });
     }
 
     const products = await MealProduct.getProductsByMeal(req.params.id);
-    
+
     res.json({
       ...meal.toPublicJSON(),
       products: products, // aggregation already returns plain objects
     });
   } catch (error) {
-    console.error('Error fetching meal:', error);
-    res.status(500).json({ error: 'Server error', message: error.message });
+    console.error("Error fetching meal:", error);
+    res.status(500).json({ error: "Server error", message: error.message });
   }
 });
 
@@ -484,6 +528,22 @@ router.get('/:id', async (req, res) => {
  *                                   fat:
  *                                     type: number
  *                                     example: 5.1
+ *                     macros:
+ *                       type: object
+ *                       description: Total nutrition values for the meal
+ *                       properties:
+ *                         calories:
+ *                           type: number
+ *                           example: 250.0
+ *                         proteins:
+ *                           type: number
+ *                           example: 10.5
+ *                         carbs:
+ *                           type: number
+ *                           example: 30.2
+ *                         fat:
+ *                           type: number
+ *                           example: 5.1
  *             examples:
  *               success:
  *                 summary: Meal with products
@@ -513,6 +573,11 @@ router.get('/:id', async (req, res) => {
  *                         fat: 5.1
  *                       createdAt: "2025-11-30T12:37:10.075Z"
  *                       updatedAt: "2025-11-30T12:37:10.075Z"
+ *                   macros:
+ *                     calories: 250.0
+ *                     proteins: 10.5
+ *                     carbs: 30.2
+ *                     fat: 5.1
  *       400:
  *         description: Validation error
  *       404:
@@ -520,7 +585,7 @@ router.get('/:id', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { name, date, time, notes, mealType, products } = req.body;
 
@@ -600,22 +665,30 @@ router.post('/', async (req, res) => {
       });
 
       await mealProduct.save();
+
+      // Attach product data for nutritionPer100g calculation
+      mealProduct.productCode = product;
+
       addedProducts.push(mealProduct.toPublicJSON());
     }
+
+    // Calculate totals (macros) using stored nutrition values
+    const mealTotals = calculateMealMacros(addedProducts);
 
     // Recalculate daily nutrition
     await DailyNutrition.calculateDailyNutrition(meal.date);
 
-    // Return meal with products
+    // Return meal with products and macros
     const response = {
       ...meal.toPublicJSON(),
       products: addedProducts,
+      macros: mealTotals,
     };
 
     res.status(201).json(response);
   } catch (error) {
-    console.error('Error creating meal:', error);
-    res.status(500).json({ error: 'Server error', message: error.message });
+    console.error("Error creating meal:", error);
+    res.status(500).json({ error: "Server error", message: error.message });
   }
 });
 
@@ -667,19 +740,19 @@ router.post('/', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
     const { name, date, time, notes, mealType } = req.body;
 
     const meal = await Meal.findById(req.params.id);
     if (!meal) {
-      return res.status(404).json({ error: 'Meal not found' });
+      return res.status(404).json({ error: "Meal not found" });
     }
 
     // Validate meal type if provided
     if (mealType && !Object.values(MEAL_TYPES).includes(mealType)) {
       return res.status(400).json({
-        error: 'Invalid meal type',
+        error: "Invalid meal type",
         validTypes: Object.values(MEAL_TYPES),
       });
     }
@@ -702,8 +775,8 @@ router.put('/:id', async (req, res) => {
 
     res.json(meal.toPublicJSON());
   } catch (error) {
-    console.error('Error updating meal:', error);
-    res.status(500).json({ error: 'Server error', message: error.message });
+    console.error("Error updating meal:", error);
+    res.status(500).json({ error: "Server error", message: error.message });
   }
 });
 
@@ -736,11 +809,11 @@ router.put('/:id', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const meal = await Meal.findById(req.params.id);
     if (!meal) {
-      return res.status(404).json({ error: 'Meal not found' });
+      return res.status(404).json({ error: "Meal not found" });
     }
 
     const mealDate = meal.date;
@@ -754,10 +827,10 @@ router.delete('/:id', async (req, res) => {
     // Recalculate daily nutrition
     await DailyNutrition.calculateDailyNutrition(mealDate);
 
-    res.json({ message: 'Meal deleted successfully' });
+    res.json({ message: "Meal deleted successfully" });
   } catch (error) {
-    console.error('Error deleting meal:', error);
-    res.status(500).json({ error: 'Server error', message: error.message });
+    console.error("Error deleting meal:", error);
+    res.status(500).json({ error: "Server error", message: error.message });
   }
 });
 
@@ -836,6 +909,13 @@ router.delete('/:id', async (req, res) => {
 router.post("/:id/products", async (req, res) => {
   try {
     const { productCode, quantity, unit, nutrition } = req.body;
+    console.log("Adding product to meal:", req.body);
+
+    // TODO: Handle undefined values
+
+    if (productCode) {
+      return res.status(400).json({ error: "Product code is required" });
+    }
 
     if (!productCode || !quantity) {
       return res
@@ -877,6 +957,9 @@ router.post("/:id/products", async (req, res) => {
     });
 
     await mealProduct.save();
+
+    // Attach product data for nutritionPer100g calculation
+    mealProduct.productCode = product;
 
     // Recalculate daily nutrition
     await DailyNutrition.calculateDailyNutrition(meal.date);
@@ -969,6 +1052,12 @@ router.put("/:id/products/:productId", async (req, res) => {
     }
 
     await mealProduct.save();
+
+    // Get product data for nutritionPer100g calculation
+    const product = await Product.findOne({ code: mealProduct.productCode });
+    if (product) {
+      mealProduct.productCode = product;
+    }
 
     // Get meal to recalculate daily nutrition
     const meal = await Meal.findById(req.params.id);
@@ -1143,7 +1232,7 @@ router.post("/add-product", async (req, res) => {
       notes,
     } = req.body;
 
-    // Walidacja wymaganych pól
+    // Validate required fields
     if (!mealType || !date || !productCode || !quantity) {
       return res.status(400).json({
         error: "mealType, date, productCode and quantity are required",
@@ -1158,7 +1247,7 @@ router.post("/add-product", async (req, res) => {
       });
     }
 
-    // Walidacja typu posiłku
+    // Validate meal type
     if (!Object.values(MEAL_TYPES).includes(mealType)) {
       return res.status(400).json({
         error: "Invalid meal type",
@@ -1166,16 +1255,16 @@ router.post("/add-product", async (req, res) => {
       });
     }
 
-    // Sprawdź czy posiłek już istnieje
+    // Check if meal already exists
     let meal = await Meal.findOne({
       mealType: mealType,
       date: new Date(date),
     });
 
-    // Jeśli nie istnieje - utwórz go
+    // If it doesn't exist, create it
     if (!meal) {
       meal = new Meal({
-        name: mealType, // Backend używa angielskich nazw
+        name: mealType, // Backend uses English names
         mealType: mealType,
         date: new Date(date),
         time: time || null,
@@ -1184,13 +1273,13 @@ router.post("/add-product", async (req, res) => {
       await meal.save();
     }
 
-    // Sprawdź czy produkt istnieje
+    // Check if product exists
     const product = await Product.findOne({ code: productCode.toString() });
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    // Dodaj produkt do posiłku
+    // Add product to meal
     const mealProduct = new MealProduct({
       mealId: meal._id,
       productCode: productCode.toString(),
@@ -1206,7 +1295,10 @@ router.post("/add-product", async (req, res) => {
 
     await mealProduct.save();
 
-    // Przelicz dzienną wartość odżywczą
+    // Attach product data for nutritionPer100g calculation
+    mealProduct.productCode = product;
+
+    // Recalculate daily nutrition
     await DailyNutrition.calculateDailyNutrition(meal.date);
 
     res.status(201).json({

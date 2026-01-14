@@ -67,10 +67,14 @@ mealProductSchema.statics.getProductsByMeal = function (mealId) {
       },
     },
     {
-      $unwind: "$productCode",
+      $unwind: {
+        path: "$productCode",
+        preserveNullAndEmptyArrays: false, // Remove documents if product not found
+      },
     },
     {
       $project: {
+        _id: 1,
         mealId: 1,
         productCode: {
           name: "$productCode.name",
@@ -81,6 +85,20 @@ mealProductSchema.statics.getProductsByMeal = function (mealId) {
         quantity: 1,
         unit: 1,
         nutrition: 1, // Include stored nutrition values
+        nutritionPer100g: {
+          calories: {
+            $ifNull: ["$productCode.nutriments.energy-kcal_100g", 0],
+          },
+          proteins: {
+            $ifNull: ["$productCode.nutriments.proteins_100g", 0],
+          },
+          carbs: {
+            $ifNull: ["$productCode.nutriments.carbohydrates_100g", 0],
+          },
+          fat: {
+            $ifNull: ["$productCode.nutriments.fat_100g", 0],
+          },
+        },
         createdAt: 1,
         updatedAt: 1,
       },
@@ -131,6 +149,33 @@ mealProductSchema.statics.getProductsByDate = function (date) {
       $unwind: "$product",
     },
     {
+      $project: {
+        _id: 1,
+        mealId: 1,
+        productCode: 1,
+        quantity: 1,
+        unit: 1,
+        nutrition: 1,
+        nutritionPer100g: {
+          calories: {
+            $ifNull: ["$product.nutriments.energy-kcal_100g", 0],
+          },
+          proteins: {
+            $ifNull: ["$product.nutriments.proteins_100g", 0],
+          },
+          carbs: {
+            $ifNull: ["$product.nutriments.carbohydrates_100g", 0],
+          },
+          fat: {
+            $ifNull: ["$product.nutriments.fat_100g", 0],
+          },
+        },
+        meal: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    {
       $sort: { "meal.time": 1, createdAt: 1 },
     },
   ]);
@@ -170,6 +215,22 @@ mealProductSchema.methods.calculateNutrition = function () {
 mealProductSchema.methods.toPublicJSON = function() {
   const mealProduct = this.toObject();
   delete mealProduct.__v;
+
+  // Calculate nutritionPer100g from product data if available
+  // Check if productCode is populated (either as ObjectId or as object with nutriments)
+  if (
+    this.productCode &&
+    typeof this.productCode === "object" &&
+    this.productCode.nutriments
+  ) {
+    mealProduct.nutritionPer100g = {
+      calories: this.productCode.nutriments["energy-kcal_100g"] || 0,
+      proteins: this.productCode.nutriments.proteins_100g || 0,
+      carbs: this.productCode.nutriments.carbohydrates_100g || 0,
+      fat: this.productCode.nutriments.fat_100g || 0,
+    };
+  }
+
   return mealProduct;
 };
 

@@ -69,7 +69,7 @@ router.get("/:ean", validateEAN, async (req, res) => {
     }
 
     if (!product) {
-      return res.status(404).json({ error: "Product not found" });
+      return res.status(404).json({ error: "Product not found for EAN: " + req.params.ean });
     }
     res.json(product);
   } catch (error) {

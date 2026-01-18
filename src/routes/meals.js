@@ -911,12 +911,6 @@ router.post("/:id/products", async (req, res) => {
     const { productCode, quantity, unit, nutrition } = req.body;
     console.log("Adding product to meal:", req.body);
 
-    // TODO: Handle undefined values
-
-    if (productCode) {
-      return res.status(400).json({ error: "Product code is required" });
-    }
-
     if (!productCode || !quantity) {
       return res
         .status(400)

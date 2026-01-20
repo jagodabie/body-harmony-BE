@@ -4,26 +4,26 @@ const mealProductSchema = new mongoose.Schema(
   {
     mealId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Meal",
-      required: [true, "Meal ID is required"],
+      ref: 'Meal',
+      required: [true, 'Meal ID is required'],
       index: true,
     },
     productCode: {
       type: String,
-      ref: "Product",
-      required: [true, "Product code is required"],
+      ref: 'Product',
+      required: [true, 'Product code is required'],
       index: true,
       trim: true,
     },
     quantity: {
       type: Number,
-      required: [true, "Quantity is required"],
-      min: [0.1, "Quantity must be greater than 0"],
+      required: [true, 'Quantity is required'],
+      min: [0.1, 'Quantity must be greater than 0'],
     },
     unit: {
       type: String,
-      default: "g",
-      enum: ["g", "kg", "ml", "l", "pieces", "cups", "tbsp", "tsp"],
+      default: 'g',
+      enum: ['g', 'kg', 'ml', 'l', 'pieces', 'cups', 'tbsp', 'tsp'],
       trim: true,
     },
     // Nutrition values calculated by frontend and stored in BE
@@ -48,7 +48,7 @@ const mealProductSchema = new mongoose.Schema(
   },
   {
     timestamps: true, // Automatically manages createdAt and updatedAt
-    collection: "body_harmony_meal_products",
+    collection: 'body_harmony_meal_products',
   }
 );
 
@@ -60,15 +60,15 @@ mealProductSchema.statics.getProductsByMeal = function (mealId) {
     },
     {
       $lookup: {
-        from: "body_harmony_products_slim",
-        localField: "productCode",
-        foreignField: "code",
-        as: "productCode",
+        from: 'body_harmony_products_slim',
+        localField: 'productCode',
+        foreignField: 'code',
+        as: 'productCode',
       },
     },
     {
       $unwind: {
-        path: "$productCode",
+        path: '$productCode',
         preserveNullAndEmptyArrays: false, // Remove documents if product not found
       },
     },
@@ -77,26 +77,26 @@ mealProductSchema.statics.getProductsByMeal = function (mealId) {
         _id: 1,
         mealId: 1,
         productCode: {
-          name: "$productCode.name",
-          code: "$productCode.code",
-          nutriments: "$productCode.nutriments",
-          brands: "$productCode.brands",
+          name: '$productCode.name',
+          code: '$productCode.code',
+          nutriments: '$productCode.nutriments',
+          brands: '$productCode.brands',
         },
         quantity: 1,
         unit: 1,
         nutrition: 1, // Include stored nutrition values
         nutritionPer100g: {
           calories: {
-            $ifNull: ["$productCode.nutriments.energy-kcal_100g", 0],
+            $ifNull: ['$productCode.nutriments.energy-kcal_100g', 0],
           },
           proteins: {
-            $ifNull: ["$productCode.nutriments.proteins_100g", 0],
+            $ifNull: ['$productCode.nutriments.proteins_100g', 0],
           },
           carbs: {
-            $ifNull: ["$productCode.nutriments.carbohydrates_100g", 0],
+            $ifNull: ['$productCode.nutriments.carbohydrates_100g', 0],
           },
           fat: {
-            $ifNull: ["$productCode.nutriments.fat_100g", 0],
+            $ifNull: ['$productCode.nutriments.fat_100g', 0],
           },
         },
         createdAt: 1,
@@ -120,18 +120,18 @@ mealProductSchema.statics.getProductsByDate = function (date) {
   return this.aggregate([
     {
       $lookup: {
-        from: "body_harmony_meals",
-        localField: "mealId",
-        foreignField: "_id",
-        as: "meal",
+        from: 'body_harmony_meals',
+        localField: 'mealId',
+        foreignField: '_id',
+        as: 'meal',
       },
     },
     {
-      $unwind: "$meal",
+      $unwind: '$meal',
     },
     {
       $match: {
-        "meal.date": {
+        'meal.date': {
           $gte: startOfDay,
           $lte: endOfDay,
         },
@@ -139,14 +139,14 @@ mealProductSchema.statics.getProductsByDate = function (date) {
     },
     {
       $lookup: {
-        from: "body_harmony_products_slim",
-        localField: "productCode",
-        foreignField: "code",
-        as: "product",
+        from: 'body_harmony_products_slim',
+        localField: 'productCode',
+        foreignField: 'code',
+        as: 'product',
       },
     },
     {
-      $unwind: "$product",
+      $unwind: '$product',
     },
     {
       $project: {
@@ -158,16 +158,16 @@ mealProductSchema.statics.getProductsByDate = function (date) {
         nutrition: 1,
         nutritionPer100g: {
           calories: {
-            $ifNull: ["$product.nutriments.energy-kcal_100g", 0],
+            $ifNull: ['$product.nutriments.energy-kcal_100g', 0],
           },
           proteins: {
-            $ifNull: ["$product.nutriments.proteins_100g", 0],
+            $ifNull: ['$product.nutriments.proteins_100g', 0],
           },
           carbs: {
-            $ifNull: ["$product.nutriments.carbohydrates_100g", 0],
+            $ifNull: ['$product.nutriments.carbohydrates_100g', 0],
           },
           fat: {
-            $ifNull: ["$product.nutriments.fat_100g", 0],
+            $ifNull: ['$product.nutriments.fat_100g', 0],
           },
         },
         meal: 1,
@@ -176,7 +176,7 @@ mealProductSchema.statics.getProductsByDate = function (date) {
       },
     },
     {
-      $sort: { "meal.time": 1, createdAt: 1 },
+      $sort: { 'meal.time': 1, createdAt: 1 },
     },
   ]);
 };
@@ -194,7 +194,7 @@ mealProductSchema.methods.calculateNutrition = function () {
 
   return {
     calories: Math.round(
-      (product.nutriments["energy-kcal_100g"] || 0) * multiplier
+      (product.nutriments['energy-kcal_100g'] || 0) * multiplier
     ),
     proteins:
       Math.round((product.nutriments.proteins_100g || 0) * multiplier * 10) /
@@ -212,7 +212,7 @@ mealProductSchema.methods.calculateNutrition = function () {
 };
 
 // Instance method to format data
-mealProductSchema.methods.toPublicJSON = function() {
+mealProductSchema.methods.toPublicJSON = function () {
   const mealProduct = this.toObject();
   delete mealProduct.__v;
 
@@ -220,11 +220,11 @@ mealProductSchema.methods.toPublicJSON = function() {
   // Check if productCode is populated (either as ObjectId or as object with nutriments)
   if (
     this.productCode &&
-    typeof this.productCode === "object" &&
+    typeof this.productCode === 'object' &&
     this.productCode.nutriments
   ) {
     mealProduct.nutritionPer100g = {
-      calories: this.productCode.nutriments["energy-kcal_100g"] || 0,
+      calories: this.productCode.nutriments['energy-kcal_100g'] || 0,
       proteins: this.productCode.nutriments.proteins_100g || 0,
       carbs: this.productCode.nutriments.carbohydrates_100g || 0,
       fat: this.productCode.nutriments.fat_100g || 0,
@@ -235,4 +235,3 @@ mealProductSchema.methods.toPublicJSON = function() {
 };
 
 module.exports = mongoose.model('MealProduct', mealProductSchema);
-

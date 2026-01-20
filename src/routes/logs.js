@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Log = require('../models/Logs');
-const { validateLogData, validateObjectId } = require('../middleware/validation');
+const {
+  validateLogData,
+  validateObjectId,
+} = require('../middleware/validation');
 
 /**
  * @swagger
@@ -44,22 +47,22 @@ router.get('/', async (req, res) => {
   try {
     const { startDate, endDate, type } = req.query;
     let query = {};
-    
+
     // Filter by type
     if (type) {
       query.type = type;
     }
-    
+
     // Filter by date range
     if (startDate && endDate) {
       query.date = {
         $gte: new Date(startDate),
-        $lte: new Date(endDate)
+        $lte: new Date(endDate),
       };
     }
-    
+
     const logs = await Log.find(query).sort({ date: -1 });
-    res.json(logs.map(log => log.toPublicJSON()));
+    res.json(logs.map((log) => log.toPublicJSON()));
   } catch (error) {
     res.status(500).json({ error: 'Server error', message: error.message });
   }
@@ -151,22 +154,22 @@ router.get('/:id', validateObjectId, async (req, res) => {
 router.post('/', validateLogData, async (req, res) => {
   try {
     const { type, value, unit, notes, date } = req.body;
-    
+
     const newLog = new Log({
       type,
       value,
       unit,
       notes,
-      date: date ? new Date(date) : undefined
+      date: date ? new Date(date) : undefined,
     });
-    
+
     await newLog.save();
     res.status(201).json(newLog.toPublicJSON());
   } catch (error) {
     if (error.name === 'ValidationError') {
-      return res.status(400).json({ 
-        error: 'Validation error', 
-        details: Object.values(error.errors).map(err => err.message)
+      return res.status(400).json({
+        error: 'Validation error',
+        details: Object.values(error.errors).map((err) => err.message),
       });
     }
     res.status(500).json({ error: 'Server error', message: error.message });
@@ -226,7 +229,7 @@ router.post('/', validateLogData, async (req, res) => {
 router.put('/:id', validateObjectId, validateLogData, async (req, res) => {
   try {
     const { type, value, unit, notes, date } = req.body;
-    
+
     const updatedLog = await Log.findByIdAndUpdate(
       req.params.id,
       {
@@ -234,21 +237,21 @@ router.put('/:id', validateObjectId, validateLogData, async (req, res) => {
         value,
         unit,
         notes,
-        date: date ? new Date(date) : undefined
+        date: date ? new Date(date) : undefined,
       },
       { new: true, runValidators: true }
     );
-    
+
     if (!updatedLog) {
       return res.status(404).json({ error: 'Log not found' });
     }
-    
+
     res.json(updatedLog.toPublicJSON());
   } catch (error) {
     if (error.name === 'ValidationError') {
-      return res.status(400).json({ 
-        error: 'Validation error', 
-        details: Object.values(error.errors).map(err => err.message)
+      return res.status(400).json({
+        error: 'Validation error',
+        details: Object.values(error.errors).map((err) => err.message),
       });
     }
     res.status(500).json({ error: 'Server error', message: error.message });
@@ -294,7 +297,10 @@ router.delete('/:id', validateObjectId, async (req, res) => {
     if (!deletedLog) {
       return res.status(404).json({ error: 'Log not found' });
     }
-    res.json({ message: 'Log deleted successfully', log: deletedLog.toPublicJSON() });
+    res.json({
+      message: 'Log deleted successfully',
+      log: deletedLog.toPublicJSON(),
+    });
   } catch (error) {
     res.status(500).json({ error: 'Server error', message: error.message });
   }
@@ -339,14 +345,14 @@ router.get('/stats/summary', async (req, res) => {
           _id: '$type',
           count: { $sum: 1 },
           latestValue: { $last: '$value' },
-          latestDate: { $last: '$date' }
-        }
+          latestDate: { $last: '$date' },
+        },
       },
       {
-        $sort: { count: -1 }
-      }
+        $sort: { count: -1 },
+      },
     ]);
-    
+
     res.json(stats);
   } catch (error) {
     res.status(500).json({ error: 'Server error', message: error.message });

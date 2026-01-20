@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
-const mongoose = require("mongoose");
-const { validateEAN } = require("../middleware/validation");
+const mongoose = require('mongoose');
+const { validateEAN } = require('../middleware/validation');
 
 // GET /products/debug/db - Debug database connection
-router.get("/debug/db", async (req, res) => {
+router.get('/debug/db', async (req, res) => {
   try {
     const dbInfo = {
       connected: mongoose.connection.readyState === 1,
@@ -55,7 +55,7 @@ router.get("/debug/db", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.get("/:ean", validateEAN, async (req, res) => {
+router.get('/:ean', validateEAN, async (req, res) => {
   try {
     // Try to search as string
     let product = await Product.findOne({ code: req.params.ean });
@@ -69,12 +69,14 @@ router.get("/:ean", validateEAN, async (req, res) => {
     }
 
     if (!product) {
-      return res.status(404).json({ error: "Product not found for EAN: " + req.params.ean });
+      return res
+        .status(404)
+        .json({ error: 'Product not found for EAN: ' + req.params.ean });
     }
     res.json(product);
   } catch (error) {
-    console.error("Error fetching product:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error fetching product:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 

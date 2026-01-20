@@ -7,8 +7,8 @@ const connectDB = require('./config/database');
 const logsRoutes = require('./routes/logs');
 const errorHandler = require('./middleware/errorHandler');
 const productsRoutes = require('./routes/products');
-const mealsRoutes = require("./routes/meals");
-const nutritionRoutes = require("./routes/nutrition");
+const mealsRoutes = require('./routes/meals');
+const nutritionRoutes = require('./routes/nutrition');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -18,10 +18,14 @@ app.use(cors());
 app.use(express.json());
 
 // Swagger documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Body Harmony API Documentation',
-}));
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Body Harmony API Documentation',
+  })
+);
 
 // API Documentation JSON endpoint
 app.get('/api-docs.json', (req, res) => {
@@ -30,7 +34,7 @@ app.get('/api-docs.json', (req, res) => {
 });
 
 // Home page with API info
-app.get("/", (req, res) => {
+app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html lang="pl">
@@ -197,8 +201,8 @@ app.get("/", (req, res) => {
 // Routes
 app.use('/logs', logsRoutes);
 app.use('/products', productsRoutes);
-app.use("/meals", mealsRoutes);
-app.use("/nutrition", nutritionRoutes);
+app.use('/meals', mealsRoutes);
+app.use('/nutrition', nutritionRoutes);
 
 /**
  * @swagger
@@ -224,10 +228,10 @@ app.use("/nutrition", nutritionRoutes);
  *                   type: number
  */
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
   });
 });
 
@@ -240,11 +244,13 @@ app.use('*', (req, res) => {
 app.use(errorHandler);
 
 // Start server
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    // Server started successfully
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      // Server started successfully
+    });
+  })
+  .catch((err) => {
+    console.error('❌ Failed to connect to database:', err.message);
+    process.exit(1);
   });
-}).catch(err => {
-  console.error('❌ Failed to connect to database:', err.message);
-  process.exit(1);
-});

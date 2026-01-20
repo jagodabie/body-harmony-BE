@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const Log = require('./models/Logs');
-const Meal = require("./models/Meal");
-const MealProduct = require("./models/MealProduct");
-const Product = require("./models/Product");
-const DailyNutrition = require("./models/DailyNutrition");
+const Meal = require('./models/Meal');
+const MealProduct = require('./models/MealProduct');
+const Product = require('./models/Product');
+const DailyNutrition = require('./models/DailyNutrition');
 require('dotenv').config();
 
 const sampleData = [
@@ -12,64 +12,64 @@ const sampleData = [
     value: '75.5',
     unit: 'kg',
     notes: 'Morning before breakfast',
-    date: new Date('2024-01-15')
+    date: new Date('2024-01-15'),
   },
   {
     type: 'weight',
     value: '75.2',
     unit: 'kg',
     notes: 'Morning before breakfast',
-    date: new Date('2024-01-16')
+    date: new Date('2024-01-16'),
   },
   {
     type: 'measurement',
     value: '85',
     unit: 'cm',
     notes: 'Waist circumference',
-    date: new Date('2024-01-15')
+    date: new Date('2024-01-15'),
   },
   {
     type: 'mood',
     value: '8',
     unit: null,
     notes: 'Good day, lots of energy',
-    date: new Date('2024-01-15')
+    date: new Date('2024-01-15'),
   },
   {
     type: 'energy',
     value: '7',
     unit: null,
     notes: 'Average energy level',
-    date: new Date('2024-01-15')
+    date: new Date('2024-01-15'),
   },
   {
     type: 'sleep',
     value: '7.5',
     unit: 'hours',
     notes: 'Good sleep, but could be longer',
-    date: new Date('2024-01-15')
+    date: new Date('2024-01-15'),
   },
   {
     type: 'exercise',
     value: '45',
     unit: 'minutes',
     notes: 'Jogging in the park',
-    date: new Date('2024-01-15')
+    date: new Date('2024-01-15'),
   },
   {
     type: 'nutrition',
     value: '1800',
     unit: 'calories',
     notes: 'Healthy diet, lots of vegetables',
-    date: new Date('2024-01-15')
+    date: new Date('2024-01-15'),
   },
   {
     type: 'water',
     value: '8',
     unit: 'glasses',
     notes: 'Good hydration',
-    date: new Date('2024-01-15')
-  }
+    date: new Date('2024-01-15'),
+  },
 ];
 
 // Sample meals data
@@ -78,50 +78,50 @@ const sampleMeals = [
     name: 'Śniadanie',
     date: new Date('2024-01-15'),
     time: '08:30',
-    notes: 'Dobre śniadanie przed pracą'
+    notes: 'Dobre śniadanie przed pracą',
   },
   {
     name: 'Drugie śniadanie',
     date: new Date('2024-01-15'),
     time: '11:00',
-    notes: 'Przekąska w pracy'
+    notes: 'Przekąska w pracy',
   },
   {
     name: 'Obiad',
     date: new Date('2024-01-15'),
     time: '14:00',
-    notes: 'Ciepły obiad w domu'
+    notes: 'Ciepły obiad w domu',
   },
   {
     name: 'Podwieczorek',
     date: new Date('2024-01-15'),
     time: '16:30',
-    notes: 'Owoc i orzechy'
+    notes: 'Owoc i orzechy',
   },
   {
     name: 'Kolacja',
     date: new Date('2024-01-15'),
     time: '19:30',
-    notes: 'Lekka kolacja'
+    notes: 'Lekka kolacja',
   },
   {
     name: 'Śniadanie',
     date: new Date('2024-01-16'),
     time: '09:00',
-    notes: 'Weekendowe śniadanie'
+    notes: 'Weekendowe śniadanie',
   },
   {
     name: 'Obiad',
     date: new Date('2024-01-16'),
     time: '13:30',
-    notes: 'Rodzinny obiad'
+    notes: 'Rodzinny obiad',
   },
   {
     name: 'Kolacja',
     date: new Date('2024-01-16'),
     time: '20:00',
-    notes: 'Wieczorna kolacja'
-  }
+    notes: 'Wieczorna kolacja',
+  },
 ];
 
 // Sample products data (mock products for seeding)
@@ -138,8 +138,8 @@ const sampleProducts = [
       'saturated-fat_100g': 0.8,
       carbohydrates_100g: 45.0,
       sugars_100g: 5.2,
-      salt_100g: 1.1
-    }
+      salt_100g: 1.1,
+    },
   },
   {
     code: '2345678901234',
@@ -153,8 +153,8 @@ const sampleProducts = [
       'saturated-fat_100g': 52.0,
       carbohydrates_100g: 0.6,
       sugars_100g: 0.6,
-      salt_100g: 0.02
-    }
+      salt_100g: 0.02,
+    },
   },
   {
     code: '3456789012345',
@@ -168,8 +168,8 @@ const sampleProducts = [
       'saturated-fat_100g': 0.0,
       carbohydrates_100g: 13.8,
       sugars_100g: 10.4,
-      salt_100g: 0.0
-    }
+      salt_100g: 0.0,
+    },
   },
   {
     code: '4567890123456',
@@ -183,8 +183,8 @@ const sampleProducts = [
       'saturated-fat_100g': 1.0,
       carbohydrates_100g: 0.0,
       sugars_100g: 0.0,
-      salt_100g: 0.1
-    }
+      salt_100g: 0.1,
+    },
   },
   {
     code: '5678901234567',
@@ -198,8 +198,8 @@ const sampleProducts = [
       'saturated-fat_100g': 0.2,
       carbohydrates_100g: 23.0,
       sugars_100g: 0.4,
-      salt_100g: 0.0
-    }
+      salt_100g: 0.0,
+    },
   },
   {
     code: '6789012345678',
@@ -213,23 +213,23 @@ const sampleProducts = [
       'saturated-fat_100g': 0.2,
       carbohydrates_100g: 3.6,
       sugars_100g: 3.6,
-      salt_100g: 0.1
-    }
-  }
+      salt_100g: 0.1,
+    },
+  },
 ];
 
 const seedDatabase = async () => {
   try {
     // Connect to database
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("Connected to MongoDB");
+    console.log('Connected to MongoDB');
 
     // Clear existing data
     await Log.deleteMany({});
     await Meal.deleteMany({});
     await MealProduct.deleteMany({});
     await DailyNutrition.deleteMany({});
-    console.log("Cleared existing data");
+    console.log('Cleared existing data');
 
     // Add sample logs
     const logs = await Log.insertMany(sampleData);
@@ -249,12 +249,12 @@ const seedDatabase = async () => {
     // Śniadanie 15.01 - chleb z masłem i jabłko
     const breakfast15 = meals.find(
       (m) =>
-        m.name === "Śniadanie" &&
-        m.date.toDateString() === new Date("2024-01-15").toDateString()
+        m.name === 'Śniadanie' &&
+        m.date.toDateString() === new Date('2024-01-15').toDateString()
     );
-    const bread = products.find((p) => p.name === "Chleb pełnoziarnisty");
-    const butter = products.find((p) => p.name === "Masło");
-    const apple = products.find((p) => p.name === "Jabłko");
+    const bread = products.find((p) => p.name === 'Chleb pełnoziarnisty');
+    const butter = products.find((p) => p.name === 'Masło');
+    const apple = products.find((p) => p.name === 'Jabłko');
 
     if (breakfast15 && bread && butter && apple) {
       mealProducts.push(
@@ -262,19 +262,19 @@ const seedDatabase = async () => {
           mealId: breakfast15._id,
           productId: bread._id,
           quantity: 80,
-          unit: "g",
+          unit: 'g',
         },
         {
           mealId: breakfast15._id,
           productId: butter._id,
           quantity: 15,
-          unit: "g",
+          unit: 'g',
         },
         {
           mealId: breakfast15._id,
           productId: apple._id,
           quantity: 150,
-          unit: "g",
+          unit: 'g',
         }
       );
     }
@@ -282,28 +282,28 @@ const seedDatabase = async () => {
     // Drugie śniadanie 15.01 - jogurt
     const secondBreakfast15 = meals.find(
       (m) =>
-        m.name === "Drugie śniadanie" &&
-        m.date.toDateString() === new Date("2024-01-15").toDateString()
+        m.name === 'Drugie śniadanie' &&
+        m.date.toDateString() === new Date('2024-01-15').toDateString()
     );
-    const yogurt = products.find((p) => p.name === "Jogurt naturalny");
+    const yogurt = products.find((p) => p.name === 'Jogurt naturalny');
 
     if (secondBreakfast15 && yogurt) {
       mealProducts.push({
         mealId: secondBreakfast15._id,
         productId: yogurt._id,
         quantity: 200,
-        unit: "g",
+        unit: 'g',
       });
     }
 
     // Obiad 15.01 - kurczak z ryżem
     const lunch15 = meals.find(
       (m) =>
-        m.name === "Obiad" &&
-        m.date.toDateString() === new Date("2024-01-15").toDateString()
+        m.name === 'Obiad' &&
+        m.date.toDateString() === new Date('2024-01-15').toDateString()
     );
-    const chicken = products.find((p) => p.name === "Kurczak (pierś)");
-    const rice = products.find((p) => p.name === "Ryż brązowy");
+    const chicken = products.find((p) => p.name === 'Kurczak (pierś)');
+    const rice = products.find((p) => p.name === 'Ryż brązowy');
 
     if (lunch15 && chicken && rice) {
       mealProducts.push(
@@ -311,17 +311,17 @@ const seedDatabase = async () => {
           mealId: lunch15._id,
           productId: chicken._id,
           quantity: 150,
-          unit: "g",
+          unit: 'g',
         },
-        { mealId: lunch15._id, productId: rice._id, quantity: 100, unit: "g" }
+        { mealId: lunch15._id, productId: rice._id, quantity: 100, unit: 'g' }
       );
     }
 
     // Podwieczorek 15.01 - jabłko
     const snack15 = meals.find(
       (m) =>
-        m.name === "Podwieczorek" &&
-        m.date.toDateString() === new Date("2024-01-15").toDateString()
+        m.name === 'Podwieczorek' &&
+        m.date.toDateString() === new Date('2024-01-15').toDateString()
     );
 
     if (snack15 && apple) {
@@ -329,29 +329,29 @@ const seedDatabase = async () => {
         mealId: snack15._id,
         productId: apple._id,
         quantity: 100,
-        unit: "g",
+        unit: 'g',
       });
     }
 
     // Kolacja 15.01 - chleb z masłem
     const dinner15 = meals.find(
       (m) =>
-        m.name === "Kolacja" &&
-        m.date.toDateString() === new Date("2024-01-15").toDateString()
+        m.name === 'Kolacja' &&
+        m.date.toDateString() === new Date('2024-01-15').toDateString()
     );
 
     if (dinner15 && bread && butter) {
       mealProducts.push(
-        { mealId: dinner15._id, productId: bread._id, quantity: 60, unit: "g" },
-        { mealId: dinner15._id, productId: butter._id, quantity: 10, unit: "g" }
+        { mealId: dinner15._id, productId: bread._id, quantity: 60, unit: 'g' },
+        { mealId: dinner15._id, productId: butter._id, quantity: 10, unit: 'g' }
       );
     }
 
     // Śniadanie 16.01 - chleb z masłem
     const breakfast16 = meals.find(
       (m) =>
-        m.name === "Śniadanie" &&
-        m.date.toDateString() === new Date("2024-01-16").toDateString()
+        m.name === 'Śniadanie' &&
+        m.date.toDateString() === new Date('2024-01-16').toDateString()
     );
 
     if (breakfast16 && bread && butter) {
@@ -360,13 +360,13 @@ const seedDatabase = async () => {
           mealId: breakfast16._id,
           productId: bread._id,
           quantity: 100,
-          unit: "g",
+          unit: 'g',
         },
         {
           mealId: breakfast16._id,
           productId: butter._id,
           quantity: 20,
-          unit: "g",
+          unit: 'g',
         }
       );
     }
@@ -374,8 +374,8 @@ const seedDatabase = async () => {
     // Obiad 16.01 - kurczak z ryżem
     const lunch16 = meals.find(
       (m) =>
-        m.name === "Obiad" &&
-        m.date.toDateString() === new Date("2024-01-16").toDateString()
+        m.name === 'Obiad' &&
+        m.date.toDateString() === new Date('2024-01-16').toDateString()
     );
 
     if (lunch16 && chicken && rice) {
@@ -384,17 +384,17 @@ const seedDatabase = async () => {
           mealId: lunch16._id,
           productId: chicken._id,
           quantity: 200,
-          unit: "g",
+          unit: 'g',
         },
-        { mealId: lunch16._id, productId: rice._id, quantity: 150, unit: "g" }
+        { mealId: lunch16._id, productId: rice._id, quantity: 150, unit: 'g' }
       );
     }
 
     // Kolacja 16.01 - jogurt
     const dinner16 = meals.find(
       (m) =>
-        m.name === "Kolacja" &&
-        m.date.toDateString() === new Date("2024-01-16").toDateString()
+        m.name === 'Kolacja' &&
+        m.date.toDateString() === new Date('2024-01-16').toDateString()
     );
 
     if (dinner16 && yogurt) {
@@ -402,7 +402,7 @@ const seedDatabase = async () => {
         mealId: dinner16._id,
         productId: yogurt._id,
         quantity: 300,
-        unit: "g",
+        unit: 'g',
       });
     }
 
@@ -410,15 +410,15 @@ const seedDatabase = async () => {
     console.log(`Added ${insertedMealProducts.length} sample meal products`);
 
     // Calculate daily nutrition for seeded dates
-    await DailyNutrition.calculateDailyNutrition(new Date("2024-01-15"));
-    await DailyNutrition.calculateDailyNutrition(new Date("2024-01-16"));
-    console.log("Calculated daily nutrition summaries");
+    await DailyNutrition.calculateDailyNutrition(new Date('2024-01-15'));
+    await DailyNutrition.calculateDailyNutrition(new Date('2024-01-16'));
+    console.log('Calculated daily nutrition summaries');
 
     // Show statistics
     const logStats = await Log.aggregate([
       {
         $group: {
-          _id: "$type",
+          _id: '$type',
           count: { $sum: 1 },
         },
       },
@@ -427,7 +427,7 @@ const seedDatabase = async () => {
     const mealStats = await Meal.aggregate([
       {
         $group: {
-          _id: "$name",
+          _id: '$name',
           count: { $sum: 1 },
         },
       },
@@ -435,36 +435,36 @@ const seedDatabase = async () => {
 
     const nutritionStats = await DailyNutrition.find({});
 
-    console.log("\n📊 Statistics of added data:");
-    console.log("\n📝 Logs:");
+    console.log('\n📊 Statistics of added data:');
+    console.log('\n📝 Logs:');
     logStats.forEach((stat) => {
       console.log(`  ${stat._id}: ${stat.count} entries`);
     });
 
-    console.log("\n🍽️ Meals:");
+    console.log('\n🍽️ Meals:');
     mealStats.forEach((stat) => {
       console.log(`  ${stat._id}: ${stat.count} entries`);
     });
 
-    console.log("\n📈 Nutrition summaries:");
+    console.log('\n📈 Nutrition summaries:');
     console.log(`  Daily nutrition records: ${nutritionStats.length}`);
 
-    console.log("\n✅ Database has been populated with sample data!");
-    console.log("\n🧪 You can now test the API:");
-    console.log("📝 Logs:");
-    console.log("  - GET http://localhost:4000/logs");
-    console.log("  - GET http://localhost:4000/logs/stats/summary");
-    console.log("\n🍽️ Meals:");
-    console.log("  - GET http://localhost:4000/meals?date=2024-01-15");
+    console.log('\n✅ Database has been populated with sample data!');
+    console.log('\n🧪 You can now test the API:');
+    console.log('📝 Logs:');
+    console.log('  - GET http://localhost:4000/logs');
+    console.log('  - GET http://localhost:4000/logs/stats/summary');
+    console.log('\n🍽️ Meals:');
+    console.log('  - GET http://localhost:4000/meals?date=2024-01-15');
     console.log(
-      "  - GET http://localhost:4000/meals?startDate=2024-01-15&endDate=2024-01-16"
+      '  - GET http://localhost:4000/meals?startDate=2024-01-15&endDate=2024-01-16'
     );
-    console.log("\n📊 Nutrition:");
-    console.log("  - GET http://localhost:4000/nutrition/daily/2024-01-15");
+    console.log('\n📊 Nutrition:');
+    console.log('  - GET http://localhost:4000/nutrition/daily/2024-01-15');
     console.log(
-      "  - GET http://localhost:4000/nutrition/daily/2024-01-15/detailed"
+      '  - GET http://localhost:4000/nutrition/daily/2024-01-15/detailed'
     );
-    console.log("  - GET http://localhost:4000/nutrition/stats?days=7");
+    console.log('  - GET http://localhost:4000/nutrition/stats?days=7');
   } catch (error) {
     console.error('Error seeding database:', error);
   } finally {
@@ -478,4 +478,4 @@ if (require.main === module) {
   seedDatabase();
 }
 
-module.exports = seedDatabase; 
+module.exports = seedDatabase;

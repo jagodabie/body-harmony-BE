@@ -2,8 +2,9 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/body-harmony';
-    
+    const mongoURI =
+      process.env.MONGO_URI || 'mongodb://localhost:27017/body-harmony';
+
     const options = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -13,7 +14,7 @@ const connectDB = async () => {
     };
 
     await mongoose.connect(mongoURI, options);
-    
+
     // Event listeners for connection
     mongoose.connection.on('error', (err) => {
       console.error('❌ MongoDB connection error:', err);
@@ -28,11 +29,10 @@ const connectDB = async () => {
       await mongoose.connection.close();
       process.exit(0);
     });
-
   } catch (err) {
     console.error('❌ MongoDB connection failed:', err.message);
     process.exit(1);
   }
 };
 
-module.exports = connectDB; 
+module.exports = connectDB;

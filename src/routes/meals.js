@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require("mongoose");
-const Meal = require("../models/Meal");
-const MealProduct = require("../models/MealProduct");
-const Product = require("../models/Product");
-const DailyNutrition = require("../models/DailyNutrition");
-const { MEAL_TYPES } = require("../config/mealTypes");
-const { calculateMealMacros } = require("../helpers/nutrition");
+const mongoose = require('mongoose');
+const Meal = require('../models/Meal');
+const MealProduct = require('../models/MealProduct');
+const Product = require('../models/Product');
+const DailyNutrition = require('../models/DailyNutrition');
+const { MEAL_TYPES } = require('../config/mealTypes');
+const { calculateMealMacros } = require('../helpers/nutrition');
 
 /**
  * @swagger
@@ -71,7 +71,7 @@ const { calculateMealMacros } = require("../helpers/nutrition");
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { date, startDate, endDate } = req.query;
     let meals;
@@ -102,8 +102,8 @@ router.get("/", async (req, res) => {
 
     res.json(mealsWithProducts);
   } catch (error) {
-    console.error("Error fetching meals:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error fetching meals:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
@@ -151,7 +151,7 @@ router.get("/", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.get("/with-products", async (req, res) => {
+router.get('/with-products', async (req, res) => {
   try {
     const { date, startDate, endDate } = req.query;
     let meals;
@@ -180,8 +180,8 @@ router.get("/with-products", async (req, res) => {
 
     res.json(mealsWithProducts);
   } catch (error) {
-    console.error("Error fetching meals with products:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error fetching meals with products:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
@@ -236,7 +236,7 @@ router.get("/with-products", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.get("/by-date/:date/with-products", async (req, res) => {
+router.get('/by-date/:date/with-products', async (req, res) => {
   try {
     const date = new Date(req.params.date);
     const meals = await Meal.getMealsByDate(date);
@@ -275,12 +275,12 @@ router.get("/by-date/:date/with-products", async (req, res) => {
     );
 
     res.json({
-      date: date.toISOString().split("T")[0],
+      date: date.toISOString().split('T')[0],
       meals: mealsWithProducts,
     });
   } catch (error) {
-    console.error("Error fetching meals by date with products:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error fetching meals by date with products:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
@@ -335,7 +335,7 @@ router.get("/by-date/:date/with-products", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.get("/by-range/:startDate/:endDate/with-products", async (req, res) => {
+router.get('/by-range/:startDate/:endDate/with-products', async (req, res) => {
   try {
     const startDate = new Date(req.params.startDate);
     const endDate = new Date(req.params.endDate);
@@ -353,13 +353,13 @@ router.get("/by-range/:startDate/:endDate/with-products", async (req, res) => {
     );
 
     res.json({
-      startDate: startDate.toISOString().split("T")[0],
-      endDate: endDate.toISOString().split("T")[0],
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
       meals: mealsWithProducts,
     });
   } catch (error) {
-    console.error("Error fetching meals by date range with products:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error fetching meals by date range with products:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
@@ -395,11 +395,11 @@ router.get("/by-range/:startDate/:endDate/with-products", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.get("/:id", async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const meal = await Meal.findById(req.params.id);
     if (!meal) {
-      return res.status(404).json({ error: "Meal not found" });
+      return res.status(404).json({ error: 'Meal not found' });
     }
 
     const products = await MealProduct.getProductsByMeal(req.params.id);
@@ -409,8 +409,8 @@ router.get("/:id", async (req, res) => {
       products: products, // aggregation already returns plain objects
     });
   } catch (error) {
-    console.error("Error fetching meal:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error fetching meal:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
@@ -585,22 +585,22 @@ router.get("/:id", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post("/", async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { name, date, time, notes, mealType, products } = req.body;
 
     if (!name || !date) {
-      return res.status(400).json({ error: "Name and date are required" });
+      return res.status(400).json({ error: 'Name and date are required' });
     }
 
     if (!mealType) {
-      return res.status(400).json({ error: "Meal type is required" });
+      return res.status(400).json({ error: 'Meal type is required' });
     }
 
     // Validate meal type
     if (!Object.values(MEAL_TYPES).includes(mealType)) {
       return res.status(400).json({
-        error: "Invalid meal type",
+        error: 'Invalid meal type',
         validTypes: Object.values(MEAL_TYPES),
       });
     }
@@ -609,7 +609,7 @@ router.post("/", async (req, res) => {
     if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({
         error:
-          "Products array is required and must contain at least one product",
+          'Products array is required and must contain at least one product',
       });
     }
 
@@ -631,15 +631,15 @@ router.post("/", async (req, res) => {
 
       if (!productCode || !quantity) {
         return res.status(400).json({
-          error: "Each product must have productCode and quantity",
+          error: 'Each product must have productCode and quantity',
         });
       }
 
       // Validate nutrition values (required from frontend)
-      if (!nutrition || typeof nutrition !== "object") {
+      if (!nutrition || typeof nutrition !== 'object') {
         return res.status(400).json({
           error:
-            "Each product must have nutrition object with calories, proteins, carbs, fat",
+            'Each product must have nutrition object with calories, proteins, carbs, fat',
         });
       }
 
@@ -655,7 +655,7 @@ router.post("/", async (req, res) => {
         mealId: meal._id,
         productCode: productCode.toString(),
         quantity,
-        unit: unit || "g",
+        unit: unit || 'g',
         nutrition: {
           calories: nutrition.calories || 0,
           proteins: nutrition.proteins || 0,
@@ -687,8 +687,8 @@ router.post("/", async (req, res) => {
 
     res.status(201).json(response);
   } catch (error) {
-    console.error("Error creating meal:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error creating meal:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
@@ -740,19 +740,19 @@ router.post("/", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.put("/:id", async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const { name, date, time, notes, mealType } = req.body;
 
     const meal = await Meal.findById(req.params.id);
     if (!meal) {
-      return res.status(404).json({ error: "Meal not found" });
+      return res.status(404).json({ error: 'Meal not found' });
     }
 
     // Validate meal type if provided
     if (mealType && !Object.values(MEAL_TYPES).includes(mealType)) {
       return res.status(400).json({
-        error: "Invalid meal type",
+        error: 'Invalid meal type',
         validTypes: Object.values(MEAL_TYPES),
       });
     }
@@ -775,8 +775,8 @@ router.put("/:id", async (req, res) => {
 
     res.json(meal.toPublicJSON());
   } catch (error) {
-    console.error("Error updating meal:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error updating meal:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
@@ -809,11 +809,11 @@ router.put("/:id", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.delete("/:id", async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const meal = await Meal.findById(req.params.id);
     if (!meal) {
-      return res.status(404).json({ error: "Meal not found" });
+      return res.status(404).json({ error: 'Meal not found' });
     }
 
     const mealDate = meal.date;
@@ -827,10 +827,10 @@ router.delete("/:id", async (req, res) => {
     // Recalculate daily nutrition
     await DailyNutrition.calculateDailyNutrition(mealDate);
 
-    res.json({ message: "Meal deleted successfully" });
+    res.json({ message: 'Meal deleted successfully' });
   } catch (error) {
-    console.error("Error deleting meal:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error deleting meal:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
@@ -906,42 +906,42 @@ router.delete("/:id", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post("/:id/products", async (req, res) => {
+router.post('/:id/products', async (req, res) => {
   try {
     const { productCode, quantity, unit, nutrition } = req.body;
-    console.log("Adding product to meal:", req.body);
+    console.log('Adding product to meal:', req.body);
 
     if (!productCode || !quantity) {
       return res
         .status(400)
-        .json({ error: "Product code and quantity are required" });
+        .json({ error: 'Product code and quantity are required' });
     }
 
     // Validate nutrition values (required from frontend)
-    if (!nutrition || typeof nutrition !== "object") {
+    if (!nutrition || typeof nutrition !== 'object') {
       return res.status(400).json({
         error:
-          "Nutrition object is required with calories, proteins, carbs, fat",
+          'Nutrition object is required with calories, proteins, carbs, fat',
       });
     }
 
     // Check if meal exists
     const meal = await Meal.findById(req.params.id);
     if (!meal) {
-      return res.status(404).json({ error: "Meal not found" });
+      return res.status(404).json({ error: 'Meal not found' });
     }
 
     // Check if product exists
     const product = await Product.findOne({ code: productCode.toString() });
     if (!product) {
-      return res.status(404).json({ error: "Product not found" });
+      return res.status(404).json({ error: 'Product not found' });
     }
 
     const mealProduct = new MealProduct({
       mealId: req.params.id,
       productCode: productCode.toString(),
       quantity,
-      unit: unit || "g",
+      unit: unit || 'g',
       nutrition: {
         calories: nutrition.calories || 0,
         proteins: nutrition.proteins || 0,
@@ -960,8 +960,8 @@ router.post("/:id/products", async (req, res) => {
 
     res.status(201).json(mealProduct.toPublicJSON());
   } catch (error) {
-    console.error("Error adding product to meal:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error adding product to meal:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
@@ -1021,7 +1021,7 @@ router.post("/:id/products", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.put("/:id/products/:productId", async (req, res) => {
+router.put('/:id/products/:productId', async (req, res) => {
   try {
     const { quantity, unit, nutrition } = req.body;
 
@@ -1031,7 +1031,7 @@ router.put("/:id/products/:productId", async (req, res) => {
     });
 
     if (!mealProduct) {
-      return res.status(404).json({ error: "Product not found in meal" });
+      return res.status(404).json({ error: 'Product not found in meal' });
     }
 
     if (quantity !== undefined) mealProduct.quantity = quantity;
@@ -1061,8 +1061,8 @@ router.put("/:id/products/:productId", async (req, res) => {
 
     res.json(mealProduct.toPublicJSON());
   } catch (error) {
-    console.error("Error updating product in meal:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error updating product in meal:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
@@ -1101,7 +1101,7 @@ router.put("/:id/products/:productId", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.delete("/:id/products/:productId", async (req, res) => {
+router.delete('/:id/products/:productId', async (req, res) => {
   try {
     const mealProduct = await MealProduct.findOneAndDelete({
       mealId: req.params.id,
@@ -1109,7 +1109,7 @@ router.delete("/:id/products/:productId", async (req, res) => {
     });
 
     if (!mealProduct) {
-      return res.status(404).json({ error: "Product not found in meal" });
+      return res.status(404).json({ error: 'Product not found in meal' });
     }
 
     // Get meal to recalculate daily nutrition
@@ -1118,10 +1118,10 @@ router.delete("/:id/products/:productId", async (req, res) => {
       await DailyNutrition.calculateDailyNutrition(meal.date);
     }
 
-    res.json({ message: "Product removed from meal successfully" });
+    res.json({ message: 'Product removed from meal successfully' });
   } catch (error) {
-    console.error("Error removing product from meal:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error removing product from meal:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
@@ -1213,7 +1213,7 @@ router.delete("/:id/products/:productId", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post("/add-product", async (req, res) => {
+router.post('/add-product', async (req, res) => {
   try {
     const {
       mealType, // "BREAKFAST", "LUNCH", "DINNER"
@@ -1229,22 +1229,22 @@ router.post("/add-product", async (req, res) => {
     // Validate required fields
     if (!mealType || !date || !productCode || !quantity) {
       return res.status(400).json({
-        error: "mealType, date, productCode and quantity are required",
+        error: 'mealType, date, productCode and quantity are required',
       });
     }
 
     // Validate nutrition values (required from frontend)
-    if (!nutrition || typeof nutrition !== "object") {
+    if (!nutrition || typeof nutrition !== 'object') {
       return res.status(400).json({
         error:
-          "Nutrition object is required with calories, proteins, carbs, fat",
+          'Nutrition object is required with calories, proteins, carbs, fat',
       });
     }
 
     // Validate meal type
     if (!Object.values(MEAL_TYPES).includes(mealType)) {
       return res.status(400).json({
-        error: "Invalid meal type",
+        error: 'Invalid meal type',
         validTypes: Object.values(MEAL_TYPES),
       });
     }
@@ -1270,7 +1270,7 @@ router.post("/add-product", async (req, res) => {
     // Check if product exists
     const product = await Product.findOne({ code: productCode.toString() });
     if (!product) {
-      return res.status(404).json({ error: "Product not found" });
+      return res.status(404).json({ error: 'Product not found' });
     }
 
     // Add product to meal
@@ -1278,7 +1278,7 @@ router.post("/add-product", async (req, res) => {
       mealId: meal._id,
       productCode: productCode.toString(),
       quantity,
-      unit: unit || "g",
+      unit: unit || 'g',
       nutrition: {
         calories: nutrition.calories || 0,
         proteins: nutrition.proteins || 0,
@@ -1300,10 +1300,9 @@ router.post("/add-product", async (req, res) => {
       mealProduct: mealProduct.toPublicJSON(),
     });
   } catch (error) {
-    console.error("Error adding product to meal:", error);
-    res.status(500).json({ error: "Server error", message: error.message });
+    console.error('Error adding product to meal:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
 
 module.exports = router;
-

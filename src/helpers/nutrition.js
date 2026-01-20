@@ -35,4 +35,3 @@ function calculateMealMacros(products) {
 module.exports = {
   calculateMealMacros,
 };
-

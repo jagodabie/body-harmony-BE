@@ -2,14 +2,16 @@
   "name": "body-harmony-be",
   "version": "1.0.0",
   "description": "Backend API for Body Harmony health and wellness tracking application",
-  "main": "src/index.js",
+  "type": "module",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "start": "node src/index.js",
-    "seed": "node src/seed.js",
-    "import-atlas": "node src/scripts/import-to-atlas.js",
-    "test": "jest",
-    "test:watch": "jest --watchAll",
+    "dev": "node --watch --import tsx src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "seed": "node dist/seed.js",
+    "import-atlas": "node dist/scripts/import-to-atlas.js",
+    "test": "NODE_ENV=test HOST=127.0.0.1 node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "NODE_ENV=test HOST=127.0.0.1 node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll",
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
     "format": "prettier --write \"**/*.{js,ts,json,md}\"",
@@ -47,6 +49,8 @@
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.0.9",
+    "@types/supertest": "^6.0.3",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.53.1",
     "@typescript-eslint/parser": "^8.53.1",
     "eslint": "^9.39.2",
@@ -58,9 +62,11 @@
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=16.0.0"
-  }
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501"
 }

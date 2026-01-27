@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const logSchema = new mongoose.Schema(
   {
@@ -86,4 +86,4 @@ logSchema.methods.toPublicJSON = function () {
   return log;
 };
 
-module.exports = mongoose.model('Log', logSchema);
+export default mongoose.model('Log', logSchema);

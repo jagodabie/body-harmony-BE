@@ -1,4 +1,4 @@
-const validateLogData = (req, res, next) => {
+const validateBodyMetricData = (req, res, next) => {
   const { type, value } = req.body;
 
   // Check required fields
@@ -137,8 +137,6 @@ const isValidEANChecksum = (ean) => {
   return checkDigit === calculatedCheckDigit;
 };
 
-module.exports = {
-  validateLogData,
-  validateObjectId,
-  validateEAN,
-};
+export { validateBodyMetricData, validateObjectId, validateEAN };
+// Alias for backward compatibility with logs.js route
+export { validateBodyMetricData as validateLogData };

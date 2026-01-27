@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const mealProductSchema = new mongoose.Schema(
   {
@@ -234,4 +234,4 @@ mealProductSchema.methods.toPublicJSON = function () {
   return mealProduct;
 };
 
-module.exports = mongoose.model('MealProduct', mealProductSchema);
+export default mongoose.model('MealProduct', mealProductSchema);

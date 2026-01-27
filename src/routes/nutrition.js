@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const DailyNutrition = require('../models/DailyNutrition');
-const Meal = require('../models/Meal');
-const MealProduct = require('../models/MealProduct');
+import DailyNutrition from '../models/DailyNutrition.js';
+import Meal from '../models/Meal.js';
+import MealProduct from '../models/MealProduct.js';
 
 /**
  * @swagger
@@ -455,4 +455,4 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

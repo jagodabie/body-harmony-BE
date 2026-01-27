@@ -1,12 +1,12 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const mongoose = require('mongoose');
-const Meal = require('../models/Meal');
-const MealProduct = require('../models/MealProduct');
-const Product = require('../models/Product');
-const DailyNutrition = require('../models/DailyNutrition');
-const { MEAL_TYPES } = require('../config/mealTypes');
-const { calculateMealMacros } = require('../helpers/nutrition');
+import mongoose from 'mongoose';
+import Meal from '../models/Meal.js';
+import MealProduct from '../models/MealProduct.js';
+import Product from '../models/Product.js';
+import DailyNutrition from '../models/DailyNutrition.js';
+import { MEAL_TYPES } from '../config/mealTypes.js';
+import { calculateMealMacros } from '../helpers/nutrition.js';
 
 /**
  * @swagger
@@ -1305,4 +1305,4 @@ router.post('/add-product', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

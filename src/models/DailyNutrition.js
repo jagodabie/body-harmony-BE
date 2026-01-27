@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const dailyNutritionSchema = new mongoose.Schema(
   {
@@ -173,4 +173,4 @@ dailyNutritionSchema.methods.toPublicJSON = function () {
   return nutrition;
 };
 
-module.exports = mongoose.model('DailyNutrition', dailyNutritionSchema);
+export default mongoose.model('DailyNutrition', dailyNutritionSchema);

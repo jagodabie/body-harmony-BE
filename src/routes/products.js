@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Product = require('../models/Product');
-const mongoose = require('mongoose');
-const { validateEAN } = require('../middleware/validation');
+import Product from '../models/Product.js';
+import mongoose from 'mongoose';
+import { validateEAN } from '../middleware/validation.js';
 
 // GET /products/debug/db - Debug database connection
 router.get('/debug/db', async (req, res) => {
@@ -80,4 +80,4 @@ router.get('/:ean', validateEAN, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

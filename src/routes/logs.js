@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Log = require('../models/Logs');
-const {
+import Log from '../models/Logs.js';
+import {
   validateLogData,
   validateObjectId,
-} = require('../middleware/validation');
+} from '../middleware/validation.js';
 
 /**
  * @swagger
@@ -359,4 +359,4 @@ router.get('/stats/summary', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

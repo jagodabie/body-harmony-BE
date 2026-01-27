@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { MEAL_TYPES } = require('../config/mealTypes');
+import mongoose from 'mongoose';
+import { MEAL_TYPES } from '../config/mealTypes.js';
 
 const mealSchema = new mongoose.Schema(
   {
@@ -89,4 +89,4 @@ mealSchema.methods.toPublicJSON = function () {
   return meal;
 };
 
-module.exports = mongoose.model('Meal', mealSchema);
+export default mongoose.model('Meal', mealSchema);

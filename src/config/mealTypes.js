@@ -13,7 +13,4 @@ const MEAL_TYPE_ORDER = [
   MEAL_TYPES.DINNER, // 4
 ];
 
-module.exports = {
-  MEAL_TYPES,
-  MEAL_TYPE_ORDER,
-};
+export { MEAL_TYPES, MEAL_TYPE_ORDER };

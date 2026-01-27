@@ -1,10 +1,12 @@
-const mongoose = require('mongoose');
-const Log = require('./models/Logs');
-const Meal = require('./models/Meal');
-const MealProduct = require('./models/MealProduct');
-const Product = require('./models/Product');
-const DailyNutrition = require('./models/DailyNutrition');
-require('dotenv').config();
+import mongoose from 'mongoose';
+import Log from './models/Logs.js';
+import Meal from './models/Meal.js';
+import MealProduct from './models/MealProduct.js';
+import Product from './models/Product.js';
+import DailyNutrition from './models/DailyNutrition.js';
+import 'dotenv/config';
+import { fileURLToPath } from 'url';
+import { pathToFileURL } from 'url';
 
 const sampleData = [
   {
@@ -474,8 +476,11 @@ const seedDatabase = async () => {
 };
 
 // Run seeding if file is called directly
-if (require.main === module) {
+// In ESM, check if this is the main module
+const __filename = fileURLToPath(import.meta.url);
+const isMainModule = process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url;
+if (isMainModule) {
   seedDatabase();
 }
 
-module.exports = seedDatabase;
+export default seedDatabase;

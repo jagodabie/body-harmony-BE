@@ -1,5 +1,4 @@
 import express from 'express';
-const router = express.Router();
 import {
   getBodyMetrics,
   getBodyMetricById,
@@ -7,9 +6,10 @@ import {
   updateBodyMetric,
   deleteBodyMetric,
   getStatsSummary,
-} from '../controllers/bodyMetrics.controller.js';
-
+} from '../controllers/body-metric.controller.js';
 import { validateBodyMetricData, validateObjectId } from '../middleware/validation.js';
+
+const router = express.Router();
 
 /**
  * @swagger
@@ -19,7 +19,6 @@ import { validateBodyMetricData, validateObjectId } from '../middleware/validati
  *     tags: [Body Metrics]
  */
 router.get('/', getBodyMetrics);
-
 router.post('/', validateBodyMetricData, createBodyMetric);
 
 /**

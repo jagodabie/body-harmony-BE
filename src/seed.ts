@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import Log from './models/Logs.js';
+import { bodyMetricRepository } from './repository/body-metric/body-metric.instance.js';
+import type { CreateBodyMetricDTO } from './repository/body-metric/body-metric.types.js';
 import Meal from './models/Meal.js';
 import MealProduct from './models/MealProduct.js';
 import Product from './models/Product.js';
@@ -223,19 +224,21 @@ const sampleProducts = [
 const seedDatabase = async () => {
   try {
     // Connect to database
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI!);
     console.log('Connected to MongoDB');
 
     // Clear existing data
-    await Log.deleteMany({});
+    await bodyMetricRepository.deleteMany();
     await Meal.deleteMany({});
     await MealProduct.deleteMany({});
     await DailyNutrition.deleteMany({});
     console.log('Cleared existing data');
 
-    // Add sample logs
-    const logs = await Log.insertMany(sampleData);
-    console.log(`Added ${logs.length} sample logs`);
+    // Add sample body metrics
+    const bodyMetrics = await bodyMetricRepository.insertMany(
+      sampleData as CreateBodyMetricDTO[]
+    );
+    console.log(`Added ${bodyMetrics.length} sample body metrics`);
 
     // Add sample products
     const products = await Product.insertMany(sampleProducts);
@@ -412,19 +415,15 @@ const seedDatabase = async () => {
     console.log(`Added ${insertedMealProducts.length} sample meal products`);
 
     // Calculate daily nutrition for seeded dates
-    await DailyNutrition.calculateDailyNutrition(new Date('2024-01-15'));
-    await DailyNutrition.calculateDailyNutrition(new Date('2024-01-16'));
+    await (DailyNutrition as unknown as { calculateDailyNutrition: (d: Date) => Promise<void> }).calculateDailyNutrition(new Date('2024-01-15'));
+    await (DailyNutrition as unknown as { calculateDailyNutrition: (d: Date) => Promise<void> }).calculateDailyNutrition(new Date('2024-01-16'));
     console.log('Calculated daily nutrition summaries');
 
     // Show statistics
-    const logStats = await Log.aggregate([
-      {
-        $group: {
-          _id: '$type',
-          count: { $sum: 1 },
-        },
-      },
-    ]);
+    const bodyMetricsStats = (await bodyMetricRepository.getMetricsSummary()) as {
+      _id: string;
+      count: number;
+    }[];
 
     const mealStats = await Meal.aggregate([
       {
@@ -438,8 +437,8 @@ const seedDatabase = async () => {
     const nutritionStats = await DailyNutrition.find({});
 
     console.log('\n📊 Statistics of added data:');
-    console.log('\n📝 Logs:');
-    logStats.forEach((stat) => {
+    console.log('\n📊 Body metrics:');
+    bodyMetricsStats.forEach((stat) => {
       console.log(`  ${stat._id}: ${stat.count} entries`);
     });
 
@@ -453,7 +452,7 @@ const seedDatabase = async () => {
 
     console.log('\n✅ Database has been populated with sample data!');
     console.log('\n🧪 You can now test the API:');
-    console.log('📝 Logs:');
+    console.log('📊 Body metrics:');
     console.log('  - GET http://localhost:4000/logs');
     console.log('  - GET http://localhost:4000/logs/stats/summary');
     console.log('\n🍽️ Meals:');

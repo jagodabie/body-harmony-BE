@@ -1,6 +1,15 @@
 import mongoose from 'mongoose';
+import type {
+  BodyMetricFields,
+  BodyMetricModel,
+  BodyMetricMethods,
+} from './body-metric.model.types.js';
 
-const logSchema = new mongoose.Schema(
+const bodyMetricSchema = new mongoose.Schema<
+  BodyMetricFields,
+  BodyMetricModel,
+  BodyMetricMethods
+>(
   {
     type: {
       type: String,
@@ -50,7 +59,7 @@ const logSchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-      immutable: true, // Cannot be changed after creation
+      immutable: true,
     },
     updatedAt: {
       type: Date,
@@ -58,32 +67,28 @@ const logSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Automatically manages createdAt and updatedAt
-    collection: 'body_harmony_logs', // Collection name in MongoDB
+    timestamps: true,
+    collection: 'body_harmony_logs',
   }
 );
 
-// Middleware - updates updatedAt before each save
-logSchema.pre('save', function (next) {
-  this.updatedAt = new Date();
-  next();
-});
-
-// Static method to get logs from date range
-logSchema.statics.getLogsByDateRange = function (startDate, endDate) {
-  return this.find({
-    date: {
-      $gte: startDate,
-      $lte: endDate,
-    },
-  }).sort({ date: -1 });
+bodyMetricSchema.methods.toPublicJSON = function () {
+  const obj = this.toObject();
+  return {
+    id: obj._id.toString(),
+    type: obj.type,
+    value: obj.value,
+    unit: obj.unit,
+    notes: obj.notes,
+    date: obj.date,
+    createdAt: obj.createdAt,
+    updatedAt: obj.updatedAt,
+  };
 };
 
-// Instance method to format data
-logSchema.methods.toPublicJSON = function () {
-  const log = this.toObject();
-  delete log.__v; // Remove document version
-  return log;
-};
-
-export default mongoose.model('Log', logSchema);
+export const BodyMetric =
+  (mongoose.models.BodyMetric as BodyMetricModel) ||
+  mongoose.model<BodyMetricFields, BodyMetricModel>(
+    'BodyMetric',
+    bodyMetricSchema
+  );

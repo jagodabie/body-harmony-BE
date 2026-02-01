@@ -11,40 +11,22 @@ import { validateBodyMetricData, validateObjectId } from '../middleware/validati
 
 const router = express.Router();
 
-/**
- * @swagger
- * /api/body-metrics:
- *   get:
- *     summary: Get all body metrics
- *     tags: [Body Metrics]
- */
+// GET /api/body-metrics - Get all body metrics (with optional filters)
 router.get('/', getBodyMetrics);
+
+// POST /api/body-metrics - Create a new body metric
 router.post('/', validateBodyMetricData, createBodyMetric);
 
-/**
- * @swagger
- * /api/body-metrics/stats/summary:
- *   get:
- *     summary: Get body metrics statistics summary
- *     tags: [Body Metrics]
- */
+// GET /api/body-metrics/stats/summary - Get statistics summary
 router.get('/stats/summary', getStatsSummary);
 
-/**
- * @swagger
- * /api/body-metrics/{id}:
- *   get:
- *     summary: Get body metrics by ID
- *     tags: [Body Metrics]
- *   put:
- *     summary: Update body metrics
- *     tags: [Body Metrics]
- *   delete:
- *     summary: Delete body metrics
- *     tags: [Body Metrics]
- */
+// GET /api/body-metrics/:id - Get body metric by ID
 router.get('/:id', validateObjectId, getBodyMetricById);
+
+// PUT /api/body-metrics/:id - Update body metric
 router.put('/:id', validateObjectId, updateBodyMetric);
+
+// DELETE /api/body-metrics/:id - Delete body metric
 router.delete('/:id', validateObjectId, deleteBodyMetric);
 
 export default router;

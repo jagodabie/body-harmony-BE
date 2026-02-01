@@ -3,7 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger.js';
-import logsRoutes from './routes/logs.js';
 import errorHandler from './middleware/errorHandler.js';
 import productsRoutes from './routes/products.js';
 import mealsRoutes from './routes/meals.js';
@@ -174,10 +173,6 @@ app.get('/', (req, res) => {
               <div class="endpoint-path">Health check</div>
             </div>
             <div class="endpoint">
-              <div class="endpoint-method">GET /logs</div>
-              <div class="endpoint-path">Logs list</div>
-            </div>
-            <div class="endpoint">
               <div class="endpoint-method">GET /meals</div>
               <div class="endpoint-path">Meals list</div>
             </div>
@@ -198,7 +193,6 @@ app.get('/', (req, res) => {
 });
 
 // Routes
-app.use('/logs', logsRoutes);
 app.use('/products', productsRoutes);
 app.use('/meals', mealsRoutes);
 app.use('/nutrition', nutritionRoutes);

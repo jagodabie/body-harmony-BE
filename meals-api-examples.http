@@ -93,7 +93,3 @@ GET http://localhost:4000/health
 
 ### 17. Get product by EAN (existing endpoint)
 GET http://localhost:4000/products/1234567890123
-
-### 18. Get all logs (existing endpoint)
-GET http://localhost:4000/logs
-

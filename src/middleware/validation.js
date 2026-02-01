@@ -138,5 +138,3 @@ const isValidEANChecksum = (ean) => {
 };
 
 export { validateBodyMetricData, validateObjectId, validateEAN };
-// Alias for backward compatibility with logs.js route
-export { validateBodyMetricData as validateLogData };

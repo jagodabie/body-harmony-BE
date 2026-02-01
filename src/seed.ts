@@ -453,8 +453,6 @@ const seedDatabase = async () => {
     console.log('\n✅ Database has been populated with sample data!');
     console.log('\n🧪 You can now test the API:');
     console.log('📊 Body metrics:');
-    console.log('  - GET http://localhost:4000/logs');
-    console.log('  - GET http://localhost:4000/logs/stats/summary');
     console.log('\n🍽️ Meals:');
     console.log('  - GET http://localhost:4000/meals?date=2024-01-15');
     console.log(

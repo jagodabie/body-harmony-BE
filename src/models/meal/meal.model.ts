@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
-import { MEAL_TYPES } from '../config/mealTypes.js';
+import type { MealFields, MealMethods, MealModel } from './meal.model.types.js';
+import { MEAL_TYPES } from '../../config/mealTypes.js';
 
-const mealSchema = new mongoose.Schema(
+const mealSchema = new mongoose.Schema<MealFields, MealModel, MealMethods>(
   {
     name: {
       type: String,
@@ -54,35 +55,6 @@ mealSchema.pre('save', function (next) {
   next();
 });
 
-// Static method to get meals by date
-mealSchema.statics.getMealsByDate = function (date) {
-  const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
-
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
-
-  return this.find({
-    date: {
-      $gte: startOfDay,
-      $lte: endOfDay,
-    },
-  }).sort({ time: 1 }); // Sort by time ascending
-};
-
-// Static method to get meals by date range
-mealSchema.statics.getMealsByDateRange = function (startDate, endDate) {
-  return this.find({
-    date: {
-      $gte: startDate,
-      $lte: endDate,
-    },
-  }).sort({ date: -1, time: 1 });
-};
-
-mealSchema.statics.MEAL_TYPES = MEAL_TYPES;
-
-// Instance method to format data
 mealSchema.methods.toPublicJSON = function () {
   const obj = this.toObject();
   return {
@@ -96,4 +68,6 @@ mealSchema.methods.toPublicJSON = function () {
   };
 };
 
-export default mongoose.model('Meal', mealSchema);
+export const Meal =
+  (mongoose.models.Meal as MealModel) ||
+  mongoose.model<MealFields, MealModel>('Meal', mealSchema);

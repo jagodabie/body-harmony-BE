@@ -8,6 +8,7 @@ import productsRoutes from './routes/products.js';
 import mealsRoutes from './routes/meals.js';
 import nutritionRoutes from './routes/nutrition.js';
 import bodyMetricRoutes from './routes/body-metric.routes.js';
+import mealRoutes from './routes/meal.routes.js';
 
 const app = express();
 
@@ -199,6 +200,7 @@ app.use('/nutrition', nutritionRoutes);
 
 // NEW EP ROUTES
 app.use('/api/body-metrics', bodyMetricRoutes);
+app.use('/api/meals', mealRoutes);
 
 /**
  * @swagger

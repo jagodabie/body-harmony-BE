@@ -1,9 +1,18 @@
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+// Load environment-specific .env file
+if (process.env.NODE_ENV === 'test') {
+  dotenv.config({ path: '.env.test' });
+}
 
 const connectDB = async () => {
   try {
+    const defaultDbName = process.env.NODE_ENV === 'test' 
+      ? 'body-harmony-test' 
+      : 'body-harmony';
     const mongoURI =
-      process.env.MONGO_URI || 'mongodb://localhost:27017/body-harmony';
+      process.env.MONGO_URI || `mongodb://localhost:27017/${defaultDbName}`;
 
     const options = {
       useNewUrlParser: true,
@@ -15,6 +24,8 @@ const connectDB = async () => {
 
     await mongoose.connect(mongoURI, options);
 
+    console.log(`✅ MongoDB connected: ${mongoURI.replace(/\/\/.*@/, '//***@')}`);
+    
     // Event listeners for connection
     mongoose.connection.on('error', (err) => {
       console.error('❌ MongoDB connection error:', err);

@@ -1,5 +1,13 @@
 export type Nullable<T> = T | null;
 
+/** Meal type – DB-agnostic domain type */
+export type MealType =
+  | 'BREAKFAST'
+  | 'LUNCH'
+  | 'DINNER'
+  | 'SNACK'
+  | 'SUPPER';
+
 /** Body metric type – DB-agnostic domain type */
 export type BodyMetricType =
   | 'weight'

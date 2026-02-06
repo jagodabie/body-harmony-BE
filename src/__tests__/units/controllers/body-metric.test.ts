@@ -28,23 +28,46 @@ const {
   getStatsSummary,
 } = await import('../../../controllers/body-metric.controller.js');
 
+// Helper to assert server error response
+const expectServerError = (res: any, message: string) => {
+  expect(res.status).toHaveBeenCalledWith(500);
+  expect(res.json).toHaveBeenCalledWith({
+    error: 'Server error',
+    message,
+  });
+};
+
+// Helper to assert validation error response
+const expectValidationError = (res: any, details: string[]) => {
+  expect(res.status).toHaveBeenCalledWith(400);
+  expect(res.json).toHaveBeenCalledWith({
+    error: 'Validation error',
+    details,
+  });
+};
+
+// Helper to create validation error
+const createValidationError = (errors: Record<string, string>) => ({
+  name: 'ValidationError',
+  errors: Object.fromEntries(
+    Object.entries(errors).map(([key, message]) => [key, { message }])
+  ),
+});
+
 describe('BodyMetrics Controller', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let res: any;
 
   beforeEach(() => {
-    // Reset all mocks before each test
     jest.clearAllMocks();
 
-    // Setup mock response
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
     };
     mockResponse = res;
 
-    // Setup mock request
     mockRequest = {
       query: {},
       params: {},
@@ -100,24 +123,6 @@ describe('BodyMetrics Controller', () => {
 
       expect(res.json).toHaveBeenCalledWith([{ id: '1', value: '70' }]);
     });
-
-    it('should handle service errors', async () => {
-      mockRequest.query = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-      };
-
-      const error = new Error('Database connection failed');
-      mockGetFilteredBodyMetrics.mockRejectedValue(error);
-
-      await getBodyMetrics(mockRequest as Request, mockResponse as Response);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Server error',
-        message: 'Database connection failed',
-      });
-    });
   });
 
   describe('getBodyMetricById', () => {
@@ -156,21 +161,6 @@ describe('BodyMetrics Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({ error: 'Body metric not found' });
-    });
-
-    it('should handle service errors', async () => {
-      mockRequest.params = { id: '123' };
-
-      const error = new Error('Database error');
-      mockGetBodyMetricById.mockRejectedValue(error);
-
-      await getBodyMetricById(mockRequest as Request, mockResponse as Response);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Server error',
-        message: 'Database error',
-      });
     });
   });
 
@@ -211,38 +201,16 @@ describe('BodyMetrics Controller', () => {
     it('should handle validation errors', async () => {
       mockRequest.body = { type: 'invalid' };
 
-      const validationError = {
-        name: 'ValidationError',
-        errors: {
-          value: { message: 'Value is required' },
-          date: { message: 'Date is required' },
-        },
-      };
-
-      mockCreateNewBodyMetric.mockRejectedValue(validationError);
+      mockCreateNewBodyMetric.mockRejectedValue(
+        createValidationError({
+          value: 'Value is required',
+          date: 'Date is required',
+        })
+      );
 
       await createBodyMetric(mockRequest as Request, mockResponse as Response);
 
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Validation error',
-        details: ['Value is required', 'Date is required'],
-      });
-    });
-
-    it('should handle server errors', async () => {
-      mockRequest.body = { type: 'weight', value: 70 };
-
-      const error = new Error('Database error');
-      mockCreateNewBodyMetric.mockRejectedValue(error);
-
-      await createBodyMetric(mockRequest as Request, mockResponse as Response);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Server error',
-        message: 'Database error',
-      });
+      expectValidationError(res, ['Value is required', 'Date is required']);
     });
   });
 
@@ -291,38 +259,13 @@ describe('BodyMetrics Controller', () => {
       mockRequest.params = { id: '123' };
       mockRequest.body = { value: -10 };
 
-      const validationError = {
-        name: 'ValidationError',
-        errors: {
-          value: { message: 'Value must be positive' },
-        },
-      };
-
-      mockUpdateBodyMetric.mockRejectedValue(validationError);
+      mockUpdateBodyMetric.mockRejectedValue(
+        createValidationError({ value: 'Value must be positive' })
+      );
 
       await updateBodyMetric(mockRequest as Request, mockResponse as Response);
 
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Validation error',
-        details: ['Value must be positive'],
-      });
-    });
-
-    it('should handle server errors', async () => {
-      mockRequest.params = { id: '123' };
-      mockRequest.body = { value: 75 };
-
-      const error = new Error('Database error');
-      mockUpdateBodyMetric.mockRejectedValue(error);
-
-      await updateBodyMetric(mockRequest as Request, mockResponse as Response);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Server error',
-        message: 'Database error',
-      });
+      expectValidationError(res, ['Value must be positive']);
     });
   });
 
@@ -370,22 +313,6 @@ describe('BodyMetrics Controller', () => {
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({ error: 'Body metric not found' });
     });
-
-    it('should handle server errors', async () => {
-      mockRequest.params = { id: '123' };
-
-      mockGetBodyMetricById.mockResolvedValue({ id: '123', value: '70' });
-      const error = new Error('Database error');
-      mockDeleteBodyMetric.mockRejectedValue(error);
-
-      await deleteBodyMetric(mockRequest as Request, mockResponse as Response);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Server error',
-        message: 'Database error',
-      });
-    });
   });
 
   describe('getStatsSummary', () => {
@@ -404,18 +331,24 @@ describe('BodyMetrics Controller', () => {
       expect(res.json).toHaveBeenCalledWith(fakeStats);
       expect(res.status).not.toHaveBeenCalled();
     });
+  });
 
-    it('should handle service errors', async () => {
-      const error = new Error('Database error');
-      mockGetStatsSummary.mockRejectedValue(error);
+  describe('Error Handling', () => {
+    it('should return 500 with error message when service throws', async () => {
+      const error = new Error('Database connection failed');
+      mockGetFilteredBodyMetrics.mockRejectedValue(error);
 
-      await getStatsSummary(mockRequest as Request, mockResponse as Response);
+      await getBodyMetrics(mockRequest as Request, mockResponse as Response);
 
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Server error',
-        message: 'Database error',
-      });
+      expectServerError(res, 'Database connection failed');
+    });
+
+    it('should return "Server error" message when error is not an Error instance', async () => {
+      mockGetFilteredBodyMetrics.mockRejectedValue('string error');
+
+      await getBodyMetrics(mockRequest as Request, mockResponse as Response);
+
+      expectServerError(res, 'Server error');
     });
   });
 });

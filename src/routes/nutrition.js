@@ -2,7 +2,7 @@ import express from 'express';
 const router = express.Router();
 import DailyNutrition from '../models/DailyNutrition.js';
 import Meal from '../models/Meal.js';
-import MealProduct from '../models/MealProduct.js';
+import { mealRepository } from '../repository/meal/meal.instance.js';
 
 /**
  * @swagger
@@ -207,7 +207,7 @@ router.get('/daily/:date/detailed', async (req, res) => {
     const meals = await Meal.getMealsByDate(date);
 
     // Get all products for the date
-    const mealProducts = await MealProduct.getProductsByDate(date);
+    const mealProducts = await mealRepository.getProductsByDate(date);
 
     // Calculate totals
     let totals = {
@@ -221,7 +221,9 @@ router.get('/daily/:date/detailed', async (req, res) => {
 
     const mealsWithProducts = await Promise.all(
       meals.map(async (meal) => {
-        const products = await MealProduct.getProductsByMeal(meal._id);
+        const products = await mealRepository.getProductsByMeal(
+          String(meal._id)
+        );
 
         let mealTotals = {
           calories: 0,

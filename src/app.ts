@@ -193,8 +193,9 @@ app.get('/', (req, res) => {
   `);
 });
 
-// Routes
-app.use('/products', productsRoutes);
+// Routes\
+// TODO: Add API prefix to all routes
+app.use('/api/products', productsRoutes);
 app.use('/meals', mealsRoutes);
 app.use('/nutrition', nutritionRoutes);
 

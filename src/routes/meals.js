@@ -2,7 +2,8 @@ import express from 'express';
 const router = express.Router();
 import mongoose from 'mongoose';
 import Meal from '../models/Meal.js';
-import MealProduct from '../models/MealProduct.js';
+import { MealProduct } from '../models/meal/meal-product.model.js';
+import { mealRepository } from '../repository/meal/meal.instance.js';
 import Product from '../models/Product.js';
 import DailyNutrition from '../models/DailyNutrition.js';
 import { MEAL_TYPES } from '../config/mealTypes.js';
@@ -90,7 +91,9 @@ router.get('/', async (req, res) => {
     // Get products with stored nutrition for each meal
     const mealsWithProducts = await Promise.all(
       meals.map(async (meal) => {
-        const products = await MealProduct.getProductsByMeal(meal._id);
+        const products = await mealRepository.getProductsByMeal(
+          String(meal._id)
+        );
 
         // Products already have nutrition from aggregation
         return {
@@ -170,7 +173,9 @@ router.get('/with-products', async (req, res) => {
     // Get products for each meal
     const mealsWithProducts = await Promise.all(
       meals.map(async (meal) => {
-        const products = await MealProduct.getProductsByMeal(meal._id);
+        const products = await mealRepository.getProductsByMeal(
+          String(meal._id)
+        );
         return {
           ...meal.toPublicJSON(),
           products: products, // aggregation already returns plain objects
@@ -244,7 +249,9 @@ router.get('/by-date/:date/with-products', async (req, res) => {
     // Get products for each meal and calculate totals
     const mealsWithProducts = await Promise.all(
       meals.map(async (meal) => {
-        const products = await MealProduct.getProductsByMeal(meal._id);
+        const products = await mealRepository.getProductsByMeal(
+          String(meal._id)
+        );
 
         // Calculate totals using stored nutrition values
         const mealTotals = calculateMealMacros(products);
@@ -344,7 +351,9 @@ router.get('/by-range/:startDate/:endDate/with-products', async (req, res) => {
     // Get products for each meal
     const mealsWithProducts = await Promise.all(
       meals.map(async (meal) => {
-        const products = await MealProduct.getProductsByMeal(meal._id);
+        const products = await mealRepository.getProductsByMeal(
+          String(meal._id)
+        );
         return {
           ...meal.toPublicJSON(),
           products: products, // aggregation already returns plain objects
@@ -402,7 +411,7 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Meal not found' });
     }
 
-    const products = await MealProduct.getProductsByMeal(req.params.id);
+    const products = await mealRepository.getProductsByMeal(req.params.id);
 
     res.json({
       ...meal.toPublicJSON(),

@@ -1,6 +1,10 @@
 import type { Request, Response } from 'express';
 import * as mealService from '../services/meal/meal.service.js';
 import type { MealType } from '../types/index.js';
+import type {
+  CreateMealProductDTO,
+  UpdateMealProductDTO,
+} from '../repository/meal/meal.types.js';
 
 export const getMeals = async (req: Request, res: Response) => {
   try {
@@ -26,7 +30,8 @@ export const getMealById = async (req: Request, res: Response) => {
     if (!meal) {
       return res.status(404).json({ error: 'Meal not found' });
     }
-    res.json(meal);
+    const products = await mealService.getProductsByMeal(mealId);
+    res.json({ ...meal, products });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Server error';
     res.status(500).json({ error: 'Server error', message });
@@ -106,6 +111,132 @@ export const deleteMeal = async (req: Request, res: Response) => {
       message: 'Meal deleted successfully',
       meal: existing,
     });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Server error';
+    res.status(500).json({ error: 'Server error', message });
+  }
+};
+
+export const getMealProducts = async (req: Request, res: Response) => {
+  try {
+    const mealId = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+    const meal = await mealService.getMealById(mealId);
+    if (!meal) {
+      return res.status(404).json({ error: 'Meal not found' });
+    }
+    const products = await mealService.getProductsByMeal(mealId);
+    res.json(products);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Server error';
+    res.status(500).json({ error: 'Server error', message });
+  }
+};
+
+export const addMealProduct = async (req: Request, res: Response) => {
+  try {
+    const mealId = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+    const body = req.body as CreateMealProductDTO;
+    if (!body.productCode || body.quantity == null) {
+      return res.status(400).json({
+        error: 'Product code and quantity are required',
+      });
+    }
+    if (!body.nutrition || typeof body.nutrition !== 'object') {
+      return res.status(400).json({
+        error:
+          'Nutrition object is required with calories, proteins, carbs, fat',
+      });
+    }
+    const product = await mealService.addProductToMeal(mealId, {
+      productCode: body.productCode,
+      quantity: body.quantity,
+      unit: body.unit,
+      nutrition: body.nutrition,
+    });
+    res.status(201).json(product);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message === 'Meal not found') {
+        return res.status(404).json({ error: 'Meal not found' });
+      }
+      if (error.message.startsWith('Product not found:')) {
+        return res.status(404).json({ error: error.message });
+      }
+    }
+    const message = error instanceof Error ? error.message : 'Server error';
+    res.status(500).json({ error: 'Server error', message });
+  }
+};
+
+export const updateMealProduct = async (req: Request, res: Response) => {
+  try {
+    const mealId = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+    const productId = Array.isArray(req.params.productId)
+      ? req.params.productId[0]
+      : req.params.productId;
+    const body = req.body as UpdateMealProductDTO;
+
+    const product = await mealService.updateMealProduct(
+      mealId,
+      productId,
+      body
+    );
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found in meal' });
+    }
+    res.json(product);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Server error';
+    res.status(500).json({ error: 'Server error', message });
+  }
+};
+
+export const removeMealProduct = async (req: Request, res: Response) => {
+  try {
+    const mealId = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+    const productId = Array.isArray(req.params.productId)
+      ? req.params.productId[0]
+      : req.params.productId;
+
+    const deleted = await mealService.deleteMealProduct(mealId, productId);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Product not found in meal' });
+    }
+    res.json({ message: 'Product removed from meal successfully' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Server error';
+    res.status(500).json({ error: 'Server error', message });
+  }
+};
+
+export const getMealsByDateWithProducts = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const dateParam = req.params.date;
+    const dateStr =
+      typeof dateParam === 'string'
+        ? dateParam
+        : Array.isArray(dateParam)
+          ? dateParam[0]
+          : undefined;
+    if (dateStr == null) {
+      return res.status(400).json({ error: 'Date parameter is required' });
+    }
+
+    const meals = await mealService.getMealsByDateWithProducts(
+      new Date(dateStr)
+    );
+    res.json(meals);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Server error';
     res.status(500).json({ error: 'Server error', message });

@@ -11,6 +11,10 @@ describe('Integration Tests - Meals API Endpoints', () => {
     if (mongoose.connection.readyState === 0) {
       await connectDB();
     }
+    const dbName = mongoose.connection.db?.databaseName ?? '';
+    if (!dbName.includes('test')) {
+      throw new Error(`Tests must use a test database (got: ${dbName}). Set MONGO_URI to body-harmony-test in .env.test`);
+    }
     await mealRepository.deleteMany();
   });
 
@@ -420,6 +424,121 @@ describe('Integration Tests - Meals API Endpoints', () => {
       // Verify meal is actually deleted
       const getRes = await request(app).get(`/api/meals/${testMeal.id}`);
       expect(getRes.statusCode).toBe(404);
+    });
+  });
+
+  describe('GET /api/meals/by-date/:date/with-products', () => {
+    it('should return 200 and empty array when no meals exist for the date', async () => {
+      const date = '2024-02-01';
+      const res = await request(app).get(
+        `/api/meals/by-date/${date}/with-products`
+      );
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toBeDefined();
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBe(0);
+    });
+
+    it('should return 200 and meals for the given date with products array', async () => {
+      await mealRepository.deleteMany();
+
+      const targetDate = new Date('2024-01-25');
+      await mealRepository.createMeal({
+        name: 'Breakfast',
+        mealType: 'BREAKFAST',
+        date: targetDate,
+        time: '08:00',
+      });
+      await mealRepository.createMeal({
+        name: 'Lunch',
+        mealType: 'LUNCH',
+        date: targetDate,
+        time: '13:00',
+      });
+
+      const dateStr = '2024-01-25';
+      const res = await request(app).get(
+        `/api/meals/by-date/${dateStr}/with-products`
+      );
+
+      expect(res.statusCode).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBe(2);
+      res.body.forEach((meal: { products: unknown }) => {
+        expect(meal).toHaveProperty('products');
+        expect(Array.isArray(meal.products)).toBe(true);
+      });
+      const names = res.body.map((m: { name: string }) => m.name);
+      expect(names).toContain('Breakfast');
+      expect(names).toContain('Lunch');
+    });
+
+    it('should not return meals from other dates', async () => {
+      await mealRepository.deleteMany();
+
+      await mealRepository.createMeal({
+        name: 'Only on 26th',
+        mealType: 'BREAKFAST',
+        date: new Date('2024-01-26'),
+        time: '08:00',
+      });
+
+      const res = await request(app).get(
+        '/api/meals/by-date/2024-01-25/with-products'
+      );
+
+      expect(res.statusCode).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBe(0);
+    });
+
+    it('should return meals with products when products are attached', async () => {
+      const Product = (await import('../../models/Product.js')).default;
+      const { MealProduct } = await import(
+        '../../models/meal/meal-product.model.js'
+      );
+
+      await mealRepository.deleteMany();
+      await MealProduct.deleteMany({});
+      await Product.deleteMany({});
+
+      await Product.create({
+        code: '9999999999999',
+        name: 'Test product',
+        nutriments: {
+          'energy-kcal_100g': 100,
+          proteins_100g: 10,
+          fat_100g: 5,
+          carbohydrates_100g: 15,
+        },
+      });
+
+      const meal = await mealRepository.createMeal({
+        name: 'Meal with product',
+        mealType: 'SNACK',
+        date: new Date('2024-01-27'),
+        time: '10:00',
+      });
+
+      await mealRepository.addProductToMeal(meal.id, {
+        productCode: '9999999999999',
+        quantity: 100,
+        unit: 'g',
+        nutrition: { calories: 100, proteins: 10, carbs: 15, fat: 5 },
+      });
+
+      const res = await request(app).get(
+        '/api/meals/by-date/2024-01-27/with-products'
+      );
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.length).toBe(1);
+      expect(res.body[0].name).toBe('Meal with product');
+      expect(res.body[0].products).toBeDefined();
+      expect(res.body[0].products.length).toBe(1);
+      expect(res.body[0].products[0].quantity).toBe(100);
+      expect(res.body[0].products[0].productCode).toBeDefined();
     });
   });
 

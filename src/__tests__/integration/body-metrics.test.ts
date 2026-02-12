@@ -11,6 +11,10 @@ describe('Integration Tests - BodyMetrics API Endpoints', () => {
     if (mongoose.connection.readyState === 0) {
       await connectDB();
     }
+    const dbName = mongoose.connection.db?.databaseName ?? '';
+    if (!dbName.includes('test')) {
+      throw new Error(`Tests must use a test database (got: ${dbName}). Set MONGO_URI to body-harmony-test in .env.test`);
+    }
     await bodyMetricRepository.deleteMany();
   });
 

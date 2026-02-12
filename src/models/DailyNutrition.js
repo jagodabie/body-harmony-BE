@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { MealProduct } from './meal/meal-product.model.js';
 
 const dailyNutritionSchema = new mongoose.Schema(
   {
@@ -104,7 +105,6 @@ dailyNutritionSchema.statics.getNutritionByDateRange = function (
 
 // Static method to calculate daily nutrition from meals
 dailyNutritionSchema.statics.calculateDailyNutrition = async function (date) {
-  const MealProduct = mongoose.model('MealProduct');
   const Meal = mongoose.model('Meal');
 
   const startOfDay = new Date(date);

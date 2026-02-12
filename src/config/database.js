@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
-// Load environment-specific .env file
+// Load environment-specific .env file (override so tests never use .env's MONGO_URI)
 if (process.env.NODE_ENV === 'test') {
-  dotenv.config({ path: '.env.test' });
+  dotenv.config({ path: '.env.test', override: true });
 }
 
 const connectDB = async () => {

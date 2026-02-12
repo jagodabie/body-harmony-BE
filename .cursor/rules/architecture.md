@@ -9,7 +9,7 @@ This project uses a strict **layered architecture**. The folder structure and re
   **routes → controllers → services → repository → models**
 - Higher layers must never import lower implementation details (e.g. Mongo/Mongoose).
 - DB-agnostic types live in `src/types`.
-- Mongo-specific logic is isolated in `src/repository` and `src/repository/models`.
+- Mongo-specific logic is isolated in `src/repository` and `src/models`.
 
 ### Naming convention
 - All folders and filenames use **kebab-case**.
@@ -24,8 +24,8 @@ src/
     <domain>/
   repository/
     <domain>/
-    models/
-      <domain>/
+  models/
+    <domain>/
   types/
   middleware/
   helpers/
@@ -54,7 +54,7 @@ src/
 - Data access layer.
 - Exposes DB-agnostic interfaces + concrete DB implementations.
 
-#### repository/models/
+#### models/
 - Mongo-only (Mongoose) schemas/models and optional Mongo-only typings.
 - Must NOT be imported outside repository.
 
@@ -91,7 +91,7 @@ Rules:
 - Repositories are the ONLY layer that talks to DB implementations.
 - Mongo/Mongoose code MUST live only in:
   - `src/repository/**`
-  - `src/repository/models/**`
+  - `src/models/**`
 
 ### 2) File & folder naming (MUST)
 - All folders and filenames MUST use kebab-case.
@@ -122,13 +122,13 @@ Services may import:
 - `config/*` (only non-DB config)
 
 Repository may import:
-- `repository/models/**`
+- `models/**`
 - `config/*` (DB config)
 - `helpers/*`
 - `types/*` (only if DB-agnostic contracts are needed)
 
 Forbidden:
-- services importing `repository/models` or Mongoose
+- services importing `models` or Mongoose
 - controllers importing repository directly
 - any upward imports (repository → services, services → controllers, etc.)
 
@@ -163,6 +163,6 @@ When adding a new domain feature (e.g. weight, nutrition, activity), create:
 - `repository/<domain>/<domain>.types.ts`
 
 Add Mongoose model only if needed:
-- `repository/models/<domain>/<domain>.model.ts` (+ `types.ts` optional)
+- `models/<domain>/<domain>.model.ts` (+ `types.ts` optional)
 
 Keep everything consistent with kebab-case and suffix conventions.

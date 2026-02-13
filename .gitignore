@@ -49,6 +49,7 @@ temp/
 # MongoDB
 data/
 *.db
+db-backup/
 
 # scripts
 import-atlas.sh

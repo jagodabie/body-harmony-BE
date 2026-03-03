@@ -12,6 +12,10 @@ import type {
   UpdateMealProductDTO,
 } from './meal.types.js';
 import type { MealRepository } from './meal.repository.js';
+import {
+  calculateNutrientsPerPortion,
+  extractNutrientsPer100g,
+} from '../../helpers/nutrition.js';
 
 export class MongoMealRepository implements MealRepository {
   async getMeals(filters: MealFilters): Promise<MealResponseDTO[]> {
@@ -77,33 +81,35 @@ export class MongoMealRepository implements MealRepository {
           from: 'body_harmony_products_slim',
           localField: 'productCode',
           foreignField: 'code',
-          as: 'productCode',
+          as: '_product',
         },
       },
       {
         $unwind: {
-          path: '$productCode',
+          path: '$_product',
           preserveNullAndEmptyArrays: false,
         },
       },
       {
         $project: {
-          _id: 1,
+          _id: 0,
+          id: { $toString: '$_id' },
           mealId: 1,
-          productCode: {
-            name: '$productCode.name',
-            code: '$productCode.code',
-            nutriments: '$productCode.nutriments',
-            brands: '$productCode.brands',
-          },
+          productCode: '$_product.code',
+          name: '$_product.name',
+          brands: '$_product.brands',
           quantity: 1,
           unit: 1,
-          nutrition: 1,
-          nutritionPer100g: {
-            calories: { $ifNull: ['$productCode.nutriments.energy-kcal_100g', 0] },
-            proteins: { $ifNull: ['$productCode.nutriments.proteins_100g', 0] },
-            carbs: { $ifNull: ['$productCode.nutriments.carbohydrates_100g', 0] },
-            fat: { $ifNull: ['$productCode.nutriments.fat_100g', 0] },
+          nutrientsPerPortion: 1,
+          nutrientsPer100g: {
+            calories: {
+              $ifNull: ['$_product.nutriments.energy-kcal_100g', 0],
+            },
+            proteins: { $ifNull: ['$_product.nutriments.proteins_100g', 0] },
+            carbs: {
+              $ifNull: ['$_product.nutriments.carbohydrates_100g', 0],
+            },
+            fat: { $ifNull: ['$_product.nutriments.fat_100g', 0] },
           },
           createdAt: 1,
           updatedAt: 1,
@@ -146,13 +152,16 @@ export class MongoMealRepository implements MealRepository {
       { $unwind: '$product' },
       {
         $project: {
-          _id: 1,
+          _id: 0,
+          id: { $toString: '$_id' },
           mealId: 1,
-          productCode: 1,
+          productCode: '$product.code',
+          name: '$product.name',
+          brands: '$product.brands',
           quantity: 1,
           unit: 1,
-          nutrition: 1,
-          nutritionPer100g: {
+          nutrientsPerPortion: 1,
+          nutrientsPer100g: {
             calories: { $ifNull: ['$product.nutriments.energy-kcal_100g', 0] },
             proteins: { $ifNull: ['$product.nutriments.proteins_100g', 0] },
             carbs: { $ifNull: ['$product.nutriments.carbohydrates_100g', 0] },
@@ -172,21 +181,30 @@ export class MongoMealRepository implements MealRepository {
     mealId: string,
     data: CreateMealProductDTO
   ): Promise<MealProductResponseDTO> {
-    const product = await Product.findOne({ code: data.productCode.toString() });
+    const product = await Product.findOne({
+      code: data.productCode.toString(),
+    });
     if (!product) {
       throw new Error(`Product not found: ${data.productCode}`);
     }
+
+    const per100g = extractNutrientsPer100g(
+      (product.nutriments as Record<string, number | undefined>) ?? {}
+    );
+    const nutrientsPerPortion = calculateNutrientsPerPortion(
+      per100g,
+      data.quantity
+    );
 
     const doc = await MealProduct.create({
       mealId,
       productCode: data.productCode.toString(),
       quantity: data.quantity,
       unit: data.unit ?? 'g',
-      nutrition: data.nutrition,
+      nutrientsPerPortion,
     });
 
-    (doc as { productCode: unknown }).productCode = product;
-    return doc.toPublicJSON() as MealProductResponseDTO;
+    return doc.toPublicJSON() as unknown as MealProductResponseDTO;
   }
 
   async updateMealProduct(
@@ -201,24 +219,30 @@ export class MongoMealRepository implements MealRepository {
 
     if (!doc) return null;
 
-    if (data.quantity !== undefined) doc.quantity = data.quantity;
-    if (data.unit !== undefined)
-      doc.unit = data.unit as (typeof doc)['unit'];
-    if (data.nutrition !== undefined) doc.nutrition = data.nutrition;
+    if (data.unit !== undefined) doc.unit = data.unit as (typeof doc)['unit'];
+
+    if (data.quantity !== undefined && data.quantity !== doc.quantity) {
+      doc.quantity = data.quantity;
+
+      const product = await Product.findOne({ code: doc.productCode });
+      if (product) {
+        const per100g = extractNutrientsPer100g(
+          (product.nutriments as Record<string, number | undefined>) ?? {}
+        );
+        doc.nutrientsPerPortion = calculateNutrientsPerPortion(
+          per100g,
+          data.quantity
+        );
+        await doc.save();
+        return doc.toPublicJSON() as unknown as MealProductResponseDTO;
+      }
+    }
 
     await doc.save();
-
-    const product = await Product.findOne({ code: doc.productCode });
-    if (product) {
-      (doc as { productCode: unknown }).productCode = product;
-    }
-    return doc.toPublicJSON() as MealProductResponseDTO;
+    return doc.toPublicJSON() as unknown as MealProductResponseDTO;
   }
 
-  async deleteMealProduct(
-    mealId: string,
-    productId: string
-  ): Promise<boolean> {
+  async deleteMealProduct(mealId: string, productId: string): Promise<boolean> {
     const result = await MealProduct.findOneAndDelete({
       mealId,
       _id: productId,

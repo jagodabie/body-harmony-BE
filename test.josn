@@ -1,0 +1,11 @@
+{
+    => mysle, ze pole nie potrzebnie wyyslane 
+
+brands: "Dairy ABC" 
+id: "6988a5e7a6ea8609182c4756"
+mealId: ""
+name: "Butter"
+productCode: "2345678901234"
+quantity: 50
+unit: "g" 
+}

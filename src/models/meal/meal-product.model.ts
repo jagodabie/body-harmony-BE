@@ -36,7 +36,7 @@ const mealProductSchema = new mongoose.Schema<
       enum: ['g', 'kg', 'ml', 'l', 'pieces', 'cups', 'tbsp', 'tsp'],
       trim: true,
     },
-    nutrition: {
+    nutrientsPerPortion: {
       calories: { type: Number, default: 0 },
       proteins: { type: Number, default: 0 },
       carbs: { type: Number, default: 0 },
@@ -50,28 +50,19 @@ const mealProductSchema = new mongoose.Schema<
 );
 
 mealProductSchema.methods.toPublicJSON = function (): MealProductPublicJSON {
-  const mealProduct = this.toObject() as MealProductPublicJSON;
-  delete (mealProduct as unknown as Record<string, unknown>).__v;
+  const obj = this.toObject();
+  const raw = obj as Record<string, unknown>;
 
-  const productCode = this.productCode as
-    | string
-    | { nutriments?: Record<string, unknown> }
-    | undefined;
-  if (
-    productCode &&
-    typeof productCode === 'object' &&
-    productCode.nutriments
-  ) {
-    const nut = productCode.nutriments as Record<string, number | undefined>;
-    mealProduct.nutritionPer100g = {
-      calories: nut['energy-kcal_100g'] ?? 0,
-      proteins: nut.proteins_100g ?? 0,
-      carbs: nut.carbohydrates_100g ?? 0,
-      fat: nut.fat_100g ?? 0,
-    };
-  }
-
-  return mealProduct;
+  return {
+    id: obj._id.toString(),
+    mealId: raw.mealId as MealProductPublicJSON['mealId'],
+    productCode: String(raw.productCode),
+    quantity: raw.quantity as number,
+    unit: raw.unit as string,
+    nutrientsPerPortion: raw.nutrientsPerPortion as MealProductPublicJSON['nutrientsPerPortion'],
+    createdAt: raw.createdAt as Date,
+    updatedAt: raw.updatedAt as Date,
+  };
 };
 
 export const MealProduct =

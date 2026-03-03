@@ -525,7 +525,6 @@ describe('Integration Tests - Meals API Endpoints', () => {
         productCode: '9999999999999',
         quantity: 100,
         unit: 'g',
-        nutrition: { calories: 100, proteins: 10, carbs: 15, fat: 5 },
       });
 
       const res = await request(app).get(

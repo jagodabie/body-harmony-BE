@@ -37,12 +37,13 @@ export const getMealById = async (
 export const createNewMeal = async (
   mealData: CreateMealDTO
 ): Promise<MealResponseDTO> => {
-  console.log('mealData =====>', mealData);
-
   const newMeal = await mealRepository.createMeal(mealData);
-  console.log('newMeal =====>', newMeal);
-  if(newMeal.id) {
-    await mealRepository.addProductToMeal(newMeal.id, mealData.products);
+  if (newMeal.id && mealData.products.length > 0) {
+    await Promise.all(
+      mealData.products.map((product) =>
+        mealRepository.addProductToMeal(newMeal.id, product)
+      )
+    );
   }
   return newMeal;
 };

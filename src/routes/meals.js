@@ -267,7 +267,7 @@ router.get('/by-date/:date/with-products', async (req, res) => {
             quantity: product.quantity,
             unit: product.unit,
             nutrition: product.nutrition,
-            nutritionPer100g: product.nutritionPer100g,
+            nutrientsPer100g: product.nutrientsPer100g,
             createdAt: product.createdAt,
             updatedAt: product.updatedAt,
           };
@@ -675,9 +675,6 @@ router.post('/', async (req, res) => {
 
       await mealProduct.save();
 
-      // Attach product data for nutritionPer100g calculation
-      mealProduct.productCode = product;
-
       addedProducts.push(mealProduct.toPublicJSON());
     }
 
@@ -961,9 +958,6 @@ router.post('/:id/products', async (req, res) => {
 
     await mealProduct.save();
 
-    // Attach product data for nutritionPer100g calculation
-    mealProduct.productCode = product;
-
     // Recalculate daily nutrition
     await DailyNutrition.calculateDailyNutrition(meal.date);
 
@@ -1055,12 +1049,6 @@ router.put('/:id/products/:productId', async (req, res) => {
     }
 
     await mealProduct.save();
-
-    // Get product data for nutritionPer100g calculation
-    const product = await Product.findOne({ code: mealProduct.productCode });
-    if (product) {
-      mealProduct.productCode = product;
-    }
 
     // Get meal to recalculate daily nutrition
     const meal = await Meal.findById(req.params.id);
@@ -1297,9 +1285,6 @@ router.post('/add-product', async (req, res) => {
     });
 
     await mealProduct.save();
-
-    // Attach product data for nutritionPer100g calculation
-    mealProduct.productCode = product;
 
     // Recalculate daily nutrition
     await DailyNutrition.calculateDailyNutrition(meal.date);

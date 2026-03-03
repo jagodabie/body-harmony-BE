@@ -145,17 +145,10 @@ export const addMealProduct = async (req: Request, res: Response) => {
         error: 'Product code and quantity are required',
       });
     }
-    if (!body.nutrition || typeof body.nutrition !== 'object') {
-      return res.status(400).json({
-        error:
-          'Nutrition object is required with calories, proteins, carbs, fat',
-      });
-    }
     const product = await mealService.addProductToMeal(mealId, {
       productCode: body.productCode,
       quantity: body.quantity,
       unit: body.unit,
-      nutrition: body.nutrition,
     });
     res.status(201).json(product);
   } catch (error: unknown) {

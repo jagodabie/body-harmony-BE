@@ -12,14 +12,12 @@ const connectDB = async () => {
       ? 'body-harmony-test' 
       : 'body-harmony';
     const mongoURI =
-      process.env.MONGO_URI || `mongodb://localhost:27017/${defaultDbName}`;
+      process.env.MONGO_URI || `mongodb://127.0.0.1:27017/${defaultDbName}`;
 
     const options = {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      maxPoolSize: 10, // Maximum number of connections in pool
-      serverSelectionTimeoutMS: 5000, // Timeout for server selection
-      socketTimeoutMS: 45000, // Timeout for socket operations
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
     };
 
     await mongoose.connect(mongoURI, options);

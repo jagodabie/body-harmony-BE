@@ -36,8 +36,12 @@ router.get('/:id', validateObjectId, getMealById);
 // PUT /api/meals/:id - Update meal
 router.put('/:id', validateObjectId, updateMeal);
 
-// DELETE /api/meals/:id - Delete meal (and its products)
-router.delete('/:id', validateObjectId, deleteMeal);
+// GET /api/meals/by-date/:date/with-products - Get meals by date with products
+router.get(
+  '/by-date/:date/with-products',
+  validateObjectId,
+  getMealsByDateWithProducts
+);
 
 // GET /api/meals/by-date/:date/with-products - Get meals by date with products
 router.get(
@@ -45,5 +49,8 @@ router.get(
   validateObjectId,
   getMealsByDateWithProducts
 );
+
+// DELETE /api/meals/:id - Delete meal (and its products)
+router.delete('/:id', validateObjectId, deleteMeal);
 
 export default router;

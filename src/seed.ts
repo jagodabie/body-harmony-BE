@@ -5,6 +5,10 @@ import Meal from './models/Meal.js';
 import { MealProduct } from './models/meal/meal-product.model.js';
 import Product from './models/Product.js';
 import DailyNutrition from './models/DailyNutrition.js';
+import {
+  calculateNutrientsPerPortion,
+  extractNutrientsPer100g,
+} from './helpers/nutrition.js';
 import 'dotenv/config';
 import { fileURLToPath } from 'url';
 import { pathToFileURL } from 'url';
@@ -220,134 +224,52 @@ const seedDatabase = async () => {
     console.log(`Added ${meals.length} sample meals`);
 
     // Add sample meal products (fixed _id so reseed gives same IDs)
-    const bread = products.find((p) => p.name === 'Whole grain bread');
-    const butter = products.find((p) => p.name === 'Butter');
-    const apple = products.find((p) => p.name === 'Apple');
-    const yogurt = products.find((p) => p.name === 'Natural yogurt');
-    const chicken = products.find((p) => p.name === 'Chicken breast');
-    const rice = products.find((p) => p.name === 'Brown rice');
+    const bread = products.find((p) => p.name === 'Whole grain bread')!;
+    const butter = products.find((p) => p.name === 'Butter')!;
+    const apple = products.find((p) => p.name === 'Apple')!;
+    const yogurt = products.find((p) => p.name === 'Natural yogurt')!;
+    const chicken = products.find((p) => p.name === 'Chicken breast')!;
+    const rice = products.find((p) => p.name === 'Brown rice')!;
+
+    const nutrientsMap = Object.fromEntries(
+      [bread, butter, apple, yogurt, chicken, rice].map((p) => [
+        p.code,
+        extractNutrientsPer100g(p.nutriments as Record<string, number>),
+      ])
+    );
+
+    const mp = (
+      idx: number,
+      mealId: mongoose.Types.ObjectId,
+      product: { code: string },
+      quantity: number
+    ) => ({
+      _id: MEAL_PRODUCT_IDS[idx],
+      mealId,
+      productCode: product.code,
+      quantity,
+      unit: 'g',
+      nutrientsPerPortion: calculateNutrientsPerPortion(
+        nutrientsMap[product.code],
+        quantity
+      ),
+    });
 
     const mealProducts = [
-      // Breakfast Jan 15 - bread, butter, apple
-      {
-        _id: MEAL_PRODUCT_IDS[0],
-        mealId: MEAL_IDS.breakfast15,
-        productCode: bread!.code,
-        quantity: 80,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      {
-        _id: MEAL_PRODUCT_IDS[1],
-        mealId: MEAL_IDS.breakfast15,
-        productCode: butter!.code,
-        quantity: 15,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      {
-        _id: MEAL_PRODUCT_IDS[2],
-        mealId: MEAL_IDS.breakfast15,
-        productCode: apple!.code,
-        quantity: 150,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      // Second breakfast Jan 15 - yogurt
-      {
-        _id: MEAL_PRODUCT_IDS[3],
-        mealId: MEAL_IDS.secondBreakfast15,
-        productCode: yogurt!.code,
-        quantity: 200,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      // Lunch Jan 15 - chicken, rice
-      {
-        _id: MEAL_PRODUCT_IDS[4],
-        mealId: MEAL_IDS.lunch15,
-        productCode: chicken!.code,
-        quantity: 150,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      {
-        _id: MEAL_PRODUCT_IDS[5],
-        mealId: MEAL_IDS.lunch15,
-        productCode: rice!.code,
-        quantity: 100,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      // Afternoon snack Jan 15 - apple
-      {
-        _id: MEAL_PRODUCT_IDS[6],
-        mealId: MEAL_IDS.snack15,
-        productCode: apple!.code,
-        quantity: 100,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      // Dinner Jan 15 - bread, butter
-      {
-        _id: MEAL_PRODUCT_IDS[7],
-        mealId: MEAL_IDS.dinner15,
-        productCode: bread!.code,
-        quantity: 60,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      {
-        _id: MEAL_PRODUCT_IDS[8],
-        mealId: MEAL_IDS.dinner15,
-        productCode: butter!.code,
-        quantity: 10,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      // Breakfast Jan 16 - bread, butter
-      {
-        _id: MEAL_PRODUCT_IDS[9],
-        mealId: MEAL_IDS.breakfast16,
-        productCode: bread!.code,
-        quantity: 100,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      {
-        _id: MEAL_PRODUCT_IDS[10],
-        mealId: MEAL_IDS.breakfast16,
-        productCode: butter!.code,
-        quantity: 20,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      // Lunch Jan 16 - chicken, rice
-      {
-        _id: MEAL_PRODUCT_IDS[11],
-        mealId: MEAL_IDS.lunch16,
-        productCode: chicken!.code,
-        quantity: 200,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      {
-        _id: MEAL_PRODUCT_IDS[12],
-        mealId: MEAL_IDS.lunch16,
-        productCode: rice!.code,
-        quantity: 150,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
-      // Dinner Jan 16 - yogurt
-      {
-        _id: MEAL_PRODUCT_IDS[13],
-        mealId: MEAL_IDS.dinner16,
-        productCode: yogurt!.code,
-        quantity: 300,
-        unit: 'g',
-        nutrition: { calories: 0, proteins: 0, carbs: 0, fat: 0 },
-      },
+      mp(0, MEAL_IDS.breakfast15, bread, 80),
+      mp(1, MEAL_IDS.breakfast15, butter, 15),
+      mp(2, MEAL_IDS.breakfast15, apple, 150),
+      mp(3, MEAL_IDS.secondBreakfast15, yogurt, 200),
+      mp(4, MEAL_IDS.lunch15, chicken, 150),
+      mp(5, MEAL_IDS.lunch15, rice, 100),
+      mp(6, MEAL_IDS.snack15, apple, 100),
+      mp(7, MEAL_IDS.dinner15, bread, 60),
+      mp(8, MEAL_IDS.dinner15, butter, 10),
+      mp(9, MEAL_IDS.breakfast16, bread, 100),
+      mp(10, MEAL_IDS.breakfast16, butter, 20),
+      mp(11, MEAL_IDS.lunch16, chicken, 200),
+      mp(12, MEAL_IDS.lunch16, rice, 150),
+      mp(13, MEAL_IDS.dinner16, yogurt, 300),
     ];
 
     const insertedMealProducts = await MealProduct.insertMany(mealProducts);

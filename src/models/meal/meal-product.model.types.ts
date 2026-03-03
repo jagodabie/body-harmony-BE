@@ -11,8 +11,7 @@ export type MealProductUnit =
   | 'tbsp'
   | 'tsp';
 
-/** Nutrition values stored per meal product */
-export interface MealProductNutrition {
+export interface MealProductNutrients {
   calories: number;
   proteins: number;
   carbs: number;
@@ -25,7 +24,7 @@ export interface MealProductFields {
   productCode: string;
   quantity: number;
   unit: MealProductUnit;
-  nutrition: MealProductNutrition;
+  nutrientsPerPortion: MealProductNutrients;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,15 +34,14 @@ export interface MealProductMethods {
   toPublicJSON(): MealProductPublicJSON;
 }
 
-/** Shape returned by toPublicJSON (with optional populated product data) */
+/** Shape returned by toPublicJSON */
 export interface MealProductPublicJSON {
-  _id: Types.ObjectId;
+  id: string;
   mealId: Types.ObjectId;
-  productCode: string | { name?: string; code?: string; nutriments?: unknown; brands?: string };
+  productCode: string;
   quantity: number;
   unit: string;
-  nutrition: MealProductNutrition;
-  nutritionPer100g?: MealProductNutrition;
+  nutrientsPerPortion: MealProductNutrients;
   createdAt: Date;
   updatedAt: Date;
 }

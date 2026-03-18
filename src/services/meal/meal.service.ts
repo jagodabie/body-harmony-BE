@@ -37,14 +37,32 @@ export const getMealById = async (
 export const createNewMeal = async (
   mealData: CreateMealDTO
 ): Promise<MealResponseDTO> => {
+  const date = new Date(mealData.date);
+  const startOfDay = new Date(date);
+  startOfDay.setUTCHours(0, 0, 0, 0);
+  const endOfDay = new Date(date);
+  endOfDay.setUTCHours(23, 59, 59, 999);
+
+  const existing = await mealRepository.getMeals({
+    startDate: startOfDay,
+    endDate: endOfDay,
+    mealType: mealData.mealType,
+  });
+
+  if (existing.length > 0) {
+    throw new Error('MEAL_ALREADY_EXISTS');
+  }
+
   const newMeal = await mealRepository.createMeal(mealData);
-  if (newMeal.id && mealData.products.length > 0) {
+
+  if (newMeal.id && mealData.products?.length) {
     await Promise.all(
       mealData.products.map((product) =>
         mealRepository.addProductToMeal(newMeal.id, product)
       )
     );
   }
+
   return newMeal;
 };
 

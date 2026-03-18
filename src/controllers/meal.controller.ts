@@ -45,6 +45,9 @@ export const createMeal = async (req: Request, res: Response) => {
     );
     res.status(201).json(newMeal);
   } catch (error: unknown) {
+    if (error instanceof Error && error.message === 'MEAL_ALREADY_EXISTS') {
+      return res.status(409).json({ error: 'Meal of this type already exists for the given day' });
+    }
     if (
       error &&
       typeof error === 'object' &&

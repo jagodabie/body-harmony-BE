@@ -54,7 +54,7 @@ mealProductSchema.methods.toPublicJSON = function (): MealProductPublicJSON {
   const raw = obj as Record<string, unknown>;
 
   return {
-    id: obj._id.toString(),
+    id: (raw._id as { toString(): string }).toString(),
     mealId: raw.mealId as MealProductPublicJSON['mealId'],
     productCode: String(raw.productCode),
     quantity: raw.quantity as number,

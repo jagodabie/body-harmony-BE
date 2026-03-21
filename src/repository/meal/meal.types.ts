@@ -32,7 +32,7 @@ export interface CreateMealDTO {
   date: Date | string;
   time?: string;
   notes?: string;
-  products: CreateMealProductDTO[];
+  products?: CreateMealProductDTO[];
 }
 
 export interface MealProductNutrientsDTO {
@@ -45,7 +45,6 @@ export interface MealProductNutrientsDTO {
 export interface MealProductResponseDTO {
   id: string;
   mealId: string;
-
   productCode: string;
   name?: string;
   brands?: string;

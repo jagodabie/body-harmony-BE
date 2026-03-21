@@ -1,67 +1,67 @@
-# Body Harmony – instalacja na Windows i restore bazy
+# Body Harmony – Windows setup and database restore
 
-## 1. Zainstaluj MongoDB Community Server
+## 1. Install MongoDB Community Server
 
-1. Wejdź na: **https://www.mongodb.com/try/download/community**
-2. Wybierz:
-   - Version: np. **7.0** (lub aktualna)
+1. Go to: **https://www.mongodb.com/try/download/community**
+2. Select:
+   - Version: e.g. **7.0** (or latest)
    - Platform: **Windows**
    - Package: **msi**
-3. Pobierz instalator i uruchom go.
-4. Wybierz **Complete**. Opcjonalnie zaznacz **Install MongoDB as a Service**, żeby MongoDB uruchamiał się z systemem.
-5. Zakończ instalację. Domyślnie MongoDB działa na **localhost:27017**.
+3. Download the installer and run it.
+4. Choose **Complete**. Optionally check **Install MongoDB as a Service** so MongoDB starts with your system.
+5. Finish the installation. MongoDB runs on **localhost:27017** by default.
 
-## 2. Zainstaluj MongoDB Database Tools (mongorestore)
+## 2. Install MongoDB Database Tools (mongorestore)
 
-Do przywracania backupu potrzebne są **MongoDB Database Tools** (m.in. `mongorestore`).
+Restoring backups requires **MongoDB Database Tools** (including `mongorestore`).
 
-1. Wejdź na: **https://www.mongodb.com/try/download/database-tools**
-2. Wybierz **Windows** i pobierz instalator (msi).
-3. Zainstaluj (domyślna ścieżka to np. `C:\Program Files\MongoDB\Server\7.0\bin` – sprawdź w instalatorze).
-4. **Dodaj do PATH**:  
-   Ustawienia systemu → Wyszukaj „zmienne środowiska” → **Zmienne środowiska** → w „Zmienne użytkownika” wybierz **Path** → **Edytuj** → **Nowy** → wklej ścieżkę do `bin` z instalacji (np. `C:\Program Files\MongoDB\Server\7.0\bin`). Zapisz.
-5. Zamknij i otwórz ponownie terminal (PowerShell / CMD). Sprawdź:
+1. Go to: **https://www.mongodb.com/try/download/database-tools**
+2. Select **Windows** and download the installer (msi).
+3. Install (default path is e.g. `C:\Program Files\MongoDB\Server\7.0\bin` – check in the installer).
+4. **Add to PATH**:  
+   System Settings → Search for "environment variables" → **Environment Variables** → under "User variables" select **Path** → **Edit** → **New** → paste the path to the `bin` folder from the installation (e.g. `C:\Program Files\MongoDB\Server\7.0\bin`). Save.
+5. Close and reopen the terminal (PowerShell / CMD). Verify:
    ```powershell
    mongorestore --version
    ```
 
-## 3. Skopiuj backup na nowy komputer
+## 3. Copy backup to the new computer
 
-- Skopiuj folder z backupem (np. `db-backup\body-harmony_20240213_120000`) do katalogu projektu **body-harmony-BE** (np. do `db-backup`).
-- Struktura powinna być taka, żeby wewnątrz był folder z nazwą bazy, np.:
+- Copy the backup folder (e.g. `db-backup\body-harmony_20240213_120000`) into the **body-harmony-BE** project directory (e.g. into `db-backup`).
+- The structure should include a folder with the database name, e.g.:
   ```
   db-backup\
     body-harmony_20240213_120000\
-      body-harmony\    <-- tu są kolekcje
+      body-harmony\    <-- collections are here
         ...
   ```
 
-## 4. Skrypty backup i restore (z poziomu projektu)
+## 4. Backup and restore scripts (from project root)
 
-W katalogu projektu (**body-harmony-BE**) możesz używać tych samych poleceń na Windows i na Mac/Linux:
+In the project directory (**body-harmony-BE**), you can use the same commands on Windows and Mac/Linux:
 
-**Backup bazy** (tworzy folder `db-backup/body-harmony_YYYYMMDD_HHMMSS`):
+**Database backup** (creates folder `db-backup/body-harmony_YYYYMMDD_HHMMSS`):
 
 ```bash
 npm run db:backup
 ```
 
-**Restore bazy** (domyślnie z `db-backup` lub z ostatniego backupu):
+**Database restore** (from `db-backup` by default or from the latest backup):
 
 ```bash
 npm run db:restore
 ```
 
-**Restore z konkretnego folderu:**
+**Restore from a specific folder:**
 
 ```bash
 npm run db:restore -- db-backup\body-harmony_20240213_120000
 ```
 
-(Data w nazwie folderu zależy od tego, kiedy zrobiłaś backup.)
+(The date in the folder name depends on when you created the backup.)
 
-Na Windows uruchamiane są skrypty PowerShell (`.ps1`), na Mac/Linux – bash (`.sh`).  
-Jeśli na Windows pojawi się błąd o polityce wykonywania skryptów:
+On Windows, PowerShell scripts (`.ps1`) are used; on Mac/Linux, bash scripts (`.sh`).  
+If you see a script execution policy error on Windows:
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -69,5 +69,5 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ---
 
-**Podsumowanie:**  
-Zainstaluj **MongoDB Server** i **MongoDB Database Tools**, skopiuj folder backupu do projektu, potem `npm run db:backup` / `npm run db:restore`.
+**Summary:**  
+Install **MongoDB Server** and **MongoDB Database Tools**, copy the backup folder into the project, then run `npm run db:backup` / `npm run db:restore`.

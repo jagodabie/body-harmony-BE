@@ -1,6 +1,7 @@
 # Doc
 README.md
 test-api.http
+body-harmony
 
 # Dependencies
 node_modules/

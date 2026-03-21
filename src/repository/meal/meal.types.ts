@@ -67,3 +67,18 @@ export interface UpdateMealProductDTO {
   quantity?: number;
   unit?: string;
 }
+
+export interface MealWithProductsAndMacrosDTO extends MealResponseDTO {
+  products: MealProductResponseDTO[];
+  macros: MealProductNutrientsDTO;
+}
+
+export interface MealMacrosSummaryDTO extends MealProductNutrientsDTO {
+  mealId: string;
+}
+
+export interface DailyMealsSummaryDTO {
+  date: string;
+  meals: MealWithProductsAndMacrosDTO[];
+  dailyTotals: MealProductNutrientsDTO;
+}

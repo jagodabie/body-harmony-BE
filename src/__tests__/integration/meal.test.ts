@@ -43,6 +43,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
         mealType: 'BREAKFAST',
         date: new Date('2024-01-15'),
         notes: 'With berries',
+        products: [],
       });
 
       const res = await request(app).get('/api/meals');
@@ -62,11 +63,13 @@ describe('Integration Tests - Meals API Endpoints', () => {
         name: 'Chicken salad',
         mealType: 'LUNCH',
         date: new Date('2024-01-15'),
+        products: [],
       });
       await mealRepository.createMeal({
         name: 'Pasta',
         mealType: 'DINNER',
         date: new Date('2024-01-15'),
+        products: [],
       });
 
       const res = await request(app)
@@ -287,6 +290,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
         mealType: 'SNACK',
         date: new Date('2024-01-20'),
         notes: 'With peanut butter',
+        products: [],
       });
 
       const res = await request(app).get(`/api/meals/${testMeal.id}`);
@@ -325,6 +329,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
         name: 'Original meal',
         mealType: 'BREAKFAST',
         date: new Date('2024-01-20'),
+        products: [],
       });
 
       const res = await request(app)
@@ -341,6 +346,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
         name: 'Test meal',
         mealType: 'BREAKFAST',
         date: new Date('2024-01-20'),
+        products: [],
       });
 
       const res = await request(app)
@@ -357,6 +363,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
         mealType: 'DINNER',
         date: new Date('2024-01-20'),
         notes: 'Initial note',
+        products: [],
       });
 
       const res = await request(app)
@@ -380,6 +387,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
         name: 'Test meal',
         mealType: 'BREAKFAST',
         date: new Date('2024-01-20'),
+        products: [],
       });
 
       const res = await request(app)
@@ -412,6 +420,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
         name: 'To be deleted',
         mealType: 'SNACK',
         date: new Date('2024-01-20'),
+        products: [],
       });
 
       const res = await request(app).delete(`/api/meals/${testMeal.id}`);
@@ -428,7 +437,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
   });
 
   describe('GET /api/meals/by-date/:date/with-products', () => {
-    it('should return 200 and empty array when no meals exist for the date', async () => {
+    it.only('should return 200 and empty array when no meals exist for the date', async () => {
       const date = '2024-02-01';
       const res = await request(app).get(
         `/api/meals/by-date/${date}/with-products`
@@ -449,12 +458,14 @@ describe('Integration Tests - Meals API Endpoints', () => {
         mealType: 'BREAKFAST',
         date: targetDate,
         time: '08:00',
+        products: [],
       });
       await mealRepository.createMeal({
         name: 'Lunch',
         mealType: 'LUNCH',
         date: targetDate,
         time: '13:00',
+        products: [],
       });
 
       const dateStr = '2024-01-25';
@@ -482,6 +493,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
         mealType: 'BREAKFAST',
         date: new Date('2024-01-26'),
         time: '08:00',
+        products: [],
       });
 
       const res = await request(app).get(
@@ -519,6 +531,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
         mealType: 'SNACK',
         date: new Date('2024-01-27'),
         time: '10:00',
+        products: [],
       });
 
       await mealRepository.addProductToMeal(meal.id, {
@@ -549,6 +562,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
         date: new Date('2024-01-20'),
         time: '08:30',
         notes: 'Test notes',
+        products: [],
       });
 
       const res = await request(app).get(`/api/meals/${testMeal.id}`);
@@ -575,18 +589,21 @@ describe('Integration Tests - Meals API Endpoints', () => {
         mealType: 'BREAKFAST',
         date: new Date('2024-01-15'),
         time: '08:00',
+        products: [],
       });
       await mealRepository.createMeal({
         name: 'Lunch day 1',
         mealType: 'LUNCH',
         date: new Date('2024-01-15'),
         time: '12:00',
+        products: [],
       });
       await mealRepository.createMeal({
         name: 'Breakfast day 2',
         mealType: 'BREAKFAST',
         date: new Date('2024-01-16'),
         time: '08:00',
+        products: [],
       });
 
       const res = await request(app).get('/api/meals');

@@ -6,8 +6,10 @@ import type {
   MealProductResponseDTO,
   CreateMealProductDTO,
   UpdateMealProductDTO,
+  DailyMealsSummaryDTO,
 } from '../../repository/meal/meal.types.js';
 import { mealRepository } from '../../repository/meal/meal.instance.js';
+import { calculateMealMacros } from '../../helpers/nutrition.js';
 
 export const getFilteredMeals = async (
   filters: MealFilters
@@ -38,7 +40,7 @@ export const createNewMeal = async (
   mealData: CreateMealDTO
 ): Promise<MealResponseDTO> => {
   const newMeal = await mealRepository.createMeal(mealData);
-  if (newMeal.id && mealData.products.length > 0) {
+  if (newMeal.id && mealData.products?.length > 0) {
     await Promise.all(
       mealData.products.map((product) =>
         mealRepository.addProductToMeal(newMeal.id, product)
@@ -100,7 +102,7 @@ export const deleteMealProduct = async (
 
 export const getMealsByDateWithProducts = async (
   date: Date
-): Promise<Array<MealResponseDTO & { products: MealProductResponseDTO[] }>> => {
+): Promise<DailyMealsSummaryDTO> => {
   const startOfDay = new Date(date);
   startOfDay.setUTCHours(0, 0, 0, 0);
   const endOfDay = new Date(date);
@@ -111,12 +113,22 @@ export const getMealsByDateWithProducts = async (
     endDate: endOfDay,
   });
 
-  const mealsWithProducts = await Promise.all(
+  const mealsWithMacros = await Promise.all(
     meals.map(async (meal) => {
       const products = await mealRepository.getProductsByMeal(meal.id);
-      return { ...meal, products };
+      const macros = calculateMealMacros(
+        products.map((product) => product.nutrientsPerPortion)
+      );
+      return { ...meal, macros, products };
     })
   );
+  const dailyTotals = calculateMealMacros(
+    mealsWithMacros.map((meal) => meal.macros)
+  );
 
-  return mealsWithProducts;
+  return {
+    date: date.toISOString().split('T')[0],
+    meals: mealsWithMacros,
+    dailyTotals,
+  };
 };

@@ -6,9 +6,9 @@ import swaggerSpec from './config/swagger.js';
 import errorHandler from './middleware/errorHandler.js';
 import productsRoutes from './routes/products.js';
 import mealsRoutes from './routes/meals.js';
-import nutritionRoutes from './routes/nutrition.js';
 import bodyMetricRoutes from './routes/body-metric.routes.js';
 import mealRoutes from './routes/meal.routes.js';
+import dailyNutritionRoutes from './routes/daily-nutrition.routes.js';
 
 const app = express();
 
@@ -182,8 +182,8 @@ app.get('/', (req, res) => {
               <div class="endpoint-path">Product by EAN</div>
             </div>
             <div class="endpoint">
-              <div class="endpoint-method">GET /nutrition/daily/:date</div>
-              <div class="endpoint-path">Daily nutrition</div>
+              <div class="endpoint-method">GET /daily-nutrition/stats</div>
+              <div class="endpoint-path">Daily nutrition stats</div>
             </div>
           </div>
         </div>
@@ -197,11 +197,10 @@ app.get('/', (req, res) => {
 // TODO: Add API prefix to all routes
 app.use('/api/products', productsRoutes);
 app.use('/meals', mealsRoutes);
-app.use('/nutrition', nutritionRoutes);
-
 // NEW EP ROUTES
 app.use('/api/body-metrics', bodyMetricRoutes);
 app.use('/api/meals', mealRoutes);
+app.use('/api/daily-nutrition', dailyNutritionRoutes);
 
 /**
  * @swagger

@@ -226,10 +226,10 @@ export const getMealsByDateWithProducts = async (
       return res.status(400).json({ error: 'Date parameter is required' });
     }
 
-    const meals = await mealService.getMealsByDateWithProducts(
+    const result = await mealService.getMealsByDateWithProducts(
       new Date(dateStr)
     );
-    res.json(meals);
+    res.json(result.meals);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Server error';
     res.status(500).json({ error: 'Server error', message });

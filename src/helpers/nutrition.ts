@@ -1,17 +1,17 @@
 import type { MealProductNutrientsDTO } from '../repository/meal/meal.types.js';
 
-const round1 = (n: number): number => Math.round(n * 10) / 10;
+const round = (n: number): number => Math.round(n);
 
 export function calculateNutrientsPerPortion(
   nutrientsPer100g: MealProductNutrientsDTO,
   quantityInGrams: number
 ): MealProductNutrientsDTO {
-  const factor = quantityInGrams / 100;
+  const portionRatio = quantityInGrams / 100;
   return {
-    calories: round1(nutrientsPer100g.calories * factor),
-    proteins: round1(nutrientsPer100g.proteins * factor),
-    carbs: round1(nutrientsPer100g.carbs * factor),
-    fat: round1(nutrientsPer100g.fat * factor),
+    calories: round(nutrientsPer100g.calories * portionRatio),
+    proteins: round(nutrientsPer100g.proteins * portionRatio),
+    carbs: round(nutrientsPer100g.carbs * portionRatio),
+    fat: round(nutrientsPer100g.fat * portionRatio),
   };
 }
 
@@ -27,7 +27,7 @@ export function extractNutrientsPer100g(
 }
 
 export function calculateMealMacros(
-  products: Array<{ nutrientsPerPortion?: MealProductNutrientsDTO }>
+  nutrientsPerPortion: MealProductNutrientsDTO[]
 ): MealProductNutrientsDTO {
   const totals: MealProductNutrientsDTO = {
     calories: 0,
@@ -36,19 +36,17 @@ export function calculateMealMacros(
     fat: 0,
   };
 
-  for (const product of products) {
-    if (product.nutrientsPerPortion) {
-      totals.calories += product.nutrientsPerPortion.calories || 0;
-      totals.proteins += product.nutrientsPerPortion.proteins || 0;
-      totals.carbs += product.nutrientsPerPortion.carbs || 0;
-      totals.fat += product.nutrientsPerPortion.fat || 0;
-    }
+  for (const nutrient of nutrientsPerPortion) {
+    totals.calories += nutrient.calories || 0;
+    totals.proteins += nutrient.proteins || 0;
+    totals.carbs += nutrient.carbs || 0;
+    totals.fat += nutrient.fat || 0;
   }
 
-  totals.calories = round1(totals.calories);
-  totals.proteins = round1(totals.proteins);
-  totals.carbs = round1(totals.carbs);
-  totals.fat = round1(totals.fat);
-
-  return totals;
+  return {
+    calories: round(totals.calories),
+    proteins: round(totals.proteins),
+    carbs: round(totals.carbs),
+    fat: round(totals.fat),
+  };
 }

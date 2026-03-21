@@ -19,10 +19,21 @@ export function extractNutrientsPer100g(
   nutriments: Record<string, number | undefined>
 ): MealProductNutrientsDTO {
   return {
-    calories: nutriments['energy-kcal_100g'] ?? 0,
-    proteins: nutriments['proteins_100g'] ?? 0,
-    carbs: nutriments['carbohydrates_100g'] ?? 0,
-    fat: nutriments['fat_100g'] ?? 0,
+    calories: round(nutriments['energy-kcal_100g'] ?? 0),
+    proteins: round(nutriments['proteins_100g'] ?? 0),
+    carbs: round(nutriments['carbohydrates_100g'] ?? 0),
+    fat: round(nutriments['fat_100g'] ?? 0),
+  };
+}
+
+export function roundNutrients(
+  nutrients: MealProductNutrientsDTO
+): MealProductNutrientsDTO {
+  return {
+    calories: round(nutrients.calories),
+    proteins: round(nutrients.proteins),
+    carbs: round(nutrients.carbs),
+    fat: round(nutrients.fat),
   };
 }
 

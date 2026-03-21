@@ -9,7 +9,7 @@ import type {
   DailyMealsSummaryDTO,
 } from '../../repository/meal/meal.types.js';
 import { mealRepository } from '../../repository/meal/meal.instance.js';
-import { calculateMealMacros } from '../../helpers/nutrition.js';
+import { calculateMealMacros, roundNutrients } from '../../helpers/nutrition.js';
 
 export const getFilteredMeals = async (
   filters: MealFilters
@@ -139,10 +139,14 @@ export const getMealsByDateWithProducts = async (
   const mealsWithMacros = await Promise.all(
     meals.map(async (meal) => {
       const products = await mealRepository.getProductsByMeal(meal.id);
+      const roundedProducts = products.map((p) => ({
+        ...p,
+        nutrientsPer100g: p.nutrientsPer100g && roundNutrients(p.nutrientsPer100g),
+      }));
       const macros = calculateMealMacros(
-        products.map((product) => product.nutrientsPerPortion)
+        roundedProducts.map((product) => product.nutrientsPerPortion)
       );
-      return { ...meal, macros, products };
+      return { ...meal, macros, products: roundedProducts };
     })
   );
   const dailyTotals = calculateMealMacros(

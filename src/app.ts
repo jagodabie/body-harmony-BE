@@ -4,11 +4,10 @@ import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger.js';
 import errorHandler from './middleware/errorHandler.js';
-import productsRoutes from './routes/products.js';
-import mealsRoutes from './routes/meals.js';
 import bodyMetricRoutes from './routes/body-metric.routes.js';
 import mealRoutes from './routes/meal.routes.js';
 import dailyNutritionRoutes from './routes/daily-nutrition.routes.js';
+import productRoutes from './routes/product.routes.js';
 
 const app = express();
 
@@ -193,11 +192,8 @@ app.get('/', (req, res) => {
   `);
 });
 
-// Routes\
-// TODO: Add API prefix to all routes
-app.use('/api/products', productsRoutes);
-app.use('/meals', mealsRoutes);
-// NEW EP ROUTES
+// Routes
+app.use('/api/products', productRoutes);
 app.use('/api/body-metrics', bodyMetricRoutes);
 app.use('/api/meals', mealRoutes);
 app.use('/api/daily-nutrition', dailyNutritionRoutes);

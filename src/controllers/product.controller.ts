@@ -3,11 +3,10 @@ import * as productService from '../services/product/product.service.js';
 
 export const getProductByEan = async (req: Request, res: Response) => {
   try {
-    const product = await productService.getProductByEan(req.params.ean);
+    const ean = req.params.ean as string;
+    const product = await productService.getProductByEan(ean);
     if (!product) {
-      return res
-        .status(404)
-        .json({ error: 'Product not found for EAN: ' + req.params.ean });
+      return res.status(404).json({ error: 'Product not found for EAN: ' + ean });
     }
     res.json(product);
   } catch (error: unknown) {

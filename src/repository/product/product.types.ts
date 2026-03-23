@@ -1,3 +1,8 @@
+export interface SearchProductsFilter {
+  query: string;
+  limit?: number;
+}
+
 export interface ProductResponseDTO {
   id: string;
   code: string;

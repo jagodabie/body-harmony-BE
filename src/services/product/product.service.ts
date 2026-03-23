@@ -6,3 +6,10 @@ export const getProductByEan = async (
 ): Promise<ProductResponseDTO | null> => {
   return productRepository.getProductByEan(ean);
 };
+
+export const searchProducts = async (
+  query: string,
+  limit?: number
+): Promise<ProductResponseDTO[]> => {
+  return productRepository.searchByName({ query, limit });
+};

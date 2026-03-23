@@ -2,8 +2,9 @@ import app from './app.js';
 import connectDB from './config/database.js';
 
 const PORT = Number(process.env.PORT) || 4000;
-// Force localhost (127.0.0.1) instead of 0.0.0.0 to avoid EPERM issues on macOS
-const HOST = process.env.HOST || '127.0.0.1';
+// Use 0.0.0.0 in production so Railway's health checker can reach the server;
+// fall back to 127.0.0.1 locally to avoid EPERM issues on macOS.
+const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 
 // Start server only if not in test environment
 if (process.env.NODE_ENV !== 'test') {

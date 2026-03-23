@@ -33,8 +33,7 @@ Pattern: `Routes → Controllers → Services → Repository → Models`
 - `GET /daily-nutrition/stats` — daily nutrition summary
 
 ### Swagger
-- Documentation for: `product`, `meal`, `body-metric`
-- Missing documentation for: `daily-nutrition`
+- Documentation for: `product`, `meal`, `body-metric`, `daily-nutrition`
 - Schemas in `src/swagger/schemas/`, paths in `src/swagger/paths/`
 
 ### Testing
@@ -59,9 +58,6 @@ Migrate on first touch — do not create standalone migration PRs:
 | `src/models/DailyNutrition.js` | legacy `.js` — only used by `seed.ts`, not production code |
 | `src/models/Meal.js` | legacy `.js` |
 | `src/models/Product.js` | legacy `.js` |
-
-### Swagger — `daily-nutrition` domain
-- No Swagger documentation for `GET /daily-nutrition/stats`
 
 ---
 

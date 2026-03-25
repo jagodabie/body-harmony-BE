@@ -209,4 +209,41 @@
  *               $ref: '#/components/schemas/Error'
  */
 
+/**
+ * @swagger
+ * /api/meals/by-date/{date}/with-products:
+ *   get:
+ *     summary: Get meals by date with products and daily macro totals
+ *     description: Returns all meals for a given day with their products, per-meal macros, and daily totals (calories, proteins, carbs, fat)
+ *     tags: [Meals]
+ *     parameters:
+ *       - in: path
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Date in YYYY-MM-DD format
+ *         example: "2026-03-25"
+ *     responses:
+ *       200:
+ *         description: Daily meals summary with macro totals
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DailyMealsSummary'
+ *       400:
+ *         description: Date parameter is required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 export {};

@@ -437,7 +437,7 @@ describe('Integration Tests - Meals API Endpoints', () => {
   });
 
   describe('GET /api/meals/by-date/:date/with-products', () => {
-    it.only('should return 200 and empty array when no meals exist for the date', async () => {
+    it.only('should return 200 and empty meals array when no meals exist for the date', async () => {
       const date = '2024-02-01';
       const res = await request(app).get(
         `/api/meals/by-date/${date}/with-products`
@@ -445,8 +445,10 @@ describe('Integration Tests - Meals API Endpoints', () => {
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toBeDefined();
-      expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.length).toBe(0);
+      expect(res.body).toHaveProperty('date', date);
+      expect(res.body).toHaveProperty('dailyTotals');
+      expect(Array.isArray(res.body.meals)).toBe(true);
+      expect(res.body.meals.length).toBe(0);
     });
 
     it('should return 200 and meals for the given date with products array', async () => {
@@ -474,13 +476,15 @@ describe('Integration Tests - Meals API Endpoints', () => {
       );
 
       expect(res.statusCode).toBe(200);
-      expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.length).toBe(2);
-      res.body.forEach((meal: { products: unknown }) => {
+      expect(res.body).toHaveProperty('date', dateStr);
+      expect(res.body).toHaveProperty('dailyTotals');
+      expect(Array.isArray(res.body.meals)).toBe(true);
+      expect(res.body.meals.length).toBe(2);
+      res.body.meals.forEach((meal: { products: unknown }) => {
         expect(meal).toHaveProperty('products');
         expect(Array.isArray(meal.products)).toBe(true);
       });
-      const names = res.body.map((m: { name: string }) => m.name);
+      const names = res.body.meals.map((m: { name: string }) => m.name);
       expect(names).toContain('Breakfast');
       expect(names).toContain('Lunch');
     });
@@ -501,8 +505,8 @@ describe('Integration Tests - Meals API Endpoints', () => {
       );
 
       expect(res.statusCode).toBe(200);
-      expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.length).toBe(0);
+      expect(Array.isArray(res.body.meals)).toBe(true);
+      expect(res.body.meals.length).toBe(0);
     });
 
     it('should return meals with products when products are attached', async () => {
@@ -545,12 +549,13 @@ describe('Integration Tests - Meals API Endpoints', () => {
       );
 
       expect(res.statusCode).toBe(200);
-      expect(res.body.length).toBe(1);
-      expect(res.body[0].name).toBe('Meal with product');
-      expect(res.body[0].products).toBeDefined();
-      expect(res.body[0].products.length).toBe(1);
-      expect(res.body[0].products[0].quantity).toBe(100);
-      expect(res.body[0].products[0].productCode).toBeDefined();
+      expect(res.body).toHaveProperty('dailyTotals');
+      expect(res.body.meals.length).toBe(1);
+      expect(res.body.meals[0].name).toBe('Meal with product');
+      expect(res.body.meals[0].products).toBeDefined();
+      expect(res.body.meals[0].products.length).toBe(1);
+      expect(res.body.meals[0].products[0].quantity).toBe(100);
+      expect(res.body.meals[0].products[0].productCode).toBeDefined();
     });
   });
 

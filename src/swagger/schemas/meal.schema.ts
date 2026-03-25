@@ -66,6 +66,48 @@
  *           maxLength: 500
  *           example: "Light breakfast before workout"
  *
+ *     MacroNutrients:
+ *       type: object
+ *       properties:
+ *         calories:
+ *           type: number
+ *           example: 264
+ *         proteins:
+ *           type: number
+ *           example: 12
+ *         carbs:
+ *           type: number
+ *           example: 19
+ *         fat:
+ *           type: number
+ *           example: 16
+ *
+ *     MealWithProducts:
+ *       allOf:
+ *         - $ref: '#/components/schemas/Meal'
+ *         - type: object
+ *           properties:
+ *             macros:
+ *               $ref: '#/components/schemas/MacroNutrients'
+ *             products:
+ *               type: array
+ *               items:
+ *                 type: object
+ *
+ *     DailyMealsSummary:
+ *       type: object
+ *       properties:
+ *         date:
+ *           type: string
+ *           format: date
+ *           example: "2026-03-25"
+ *         dailyTotals:
+ *           $ref: '#/components/schemas/MacroNutrients'
+ *         meals:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/MealWithProducts'
+ *
  *     UpdateMealRequest:
  *       type: object
  *       properties:

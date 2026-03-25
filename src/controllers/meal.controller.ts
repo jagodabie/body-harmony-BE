@@ -232,7 +232,7 @@ export const getMealsByDateWithProducts = async (
     const result = await mealService.getMealsByDateWithProducts(
       new Date(dateStr)
     );
-    res.json(result.meals);
+    res.json(result);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Server error';
     res.status(500).json({ error: 'Server error', message });

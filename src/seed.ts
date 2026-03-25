@@ -1,10 +1,9 @@
 import mongoose from 'mongoose';
 import { bodyMetricRepository } from './repository/body-metric/body-metric.instance.js';
 import type { CreateBodyMetricDTO } from './repository/body-metric/body-metric.types.js';
-import Meal from './models/Meal.js';
+import { Meal } from './models/meal/meal.model.js';
 import { MealProduct } from './models/meal/meal-product.model.js';
-import Product from './models/Product.js';
-import DailyNutrition from './models/DailyNutrition.js';
+import { Product } from './models/product/product.model.js';
 import {
   calculateNutrientsPerPortion,
   extractNutrientsPer100g,
@@ -195,7 +194,6 @@ const seedDatabase = async () => {
       await bodyMetricRepository.deleteMany();
       await MealProduct.deleteMany({});
       await Meal.deleteMany({});
-      await DailyNutrition.deleteMany({});
       await Product.deleteMany({});
       console.log('Cleared existing data');
     } else {
@@ -275,19 +273,6 @@ const seedDatabase = async () => {
     const insertedMealProducts = await MealProduct.insertMany(mealProducts);
     console.log(`Added ${insertedMealProducts.length} sample meal products`);
 
-    // Calculate daily nutrition for seeded dates (wczoraj, dziś)
-    await (
-      DailyNutrition as unknown as {
-        calculateDailyNutrition: (d: Date) => Promise<void>;
-      }
-    ).calculateDailyNutrition(yesterday);
-    await (
-      DailyNutrition as unknown as {
-        calculateDailyNutrition: (d: Date) => Promise<void>;
-      }
-    ).calculateDailyNutrition(today);
-    console.log('Calculated daily nutrition summaries');
-
     // Show statistics
     const bodyMetricsStats =
       (await bodyMetricRepository.getMetricsSummary()) as {
@@ -304,8 +289,6 @@ const seedDatabase = async () => {
       },
     ]);
 
-    const nutritionStats = await DailyNutrition.find({});
-
     console.log('\n📊 Statistics of added data:');
     console.log('\n📊 Body metrics:');
     bodyMetricsStats.forEach((stat) => {
@@ -316,9 +299,6 @@ const seedDatabase = async () => {
     mealStats.forEach((stat) => {
       console.log(`  ${stat._id}: ${stat.count} entries`);
     });
-
-    console.log('\n📈 Nutrition summaries:');
-    console.log(`  Daily nutrition records: ${nutritionStats.length}`);
 
     console.log('\n✅ Database has been populated with sample data!');
     console.log(`   Daty: wczoraj ${dateStr(yesterday)}, dziś ${dateStr(today)}`);

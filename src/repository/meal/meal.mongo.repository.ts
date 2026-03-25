@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Meal } from '../../models/meal/meal.model.js';
 import { MealProduct } from '../../models/meal/meal-product.model.js';
-import Product from '../../models/Product.js';
+import { Product } from '../../models/product/product.model.js';
 import type {
   MealFilters,
   MealResponseDTO,
